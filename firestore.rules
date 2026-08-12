@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Usuarios: cualquiera logueado puede leer perfiles (para nombres en
+    // leaderboard y cierre de jornada), pero solo el dueño edita el suyo.
+    // NOTA: get y list separados explícitamente (diagnóstico de bug de permisos).
+    match /usuarios/{uid} {
+      allow get: if request.auth != null;
+      allow list: if request.auth != null;
+      allow write: if request.auth.uid == uid;
+    }
+
+    // Jornadas: todos pueden leer, solo admin puede escribir
+    match /jornadas/{document=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth.uid == "CNTWR8yNC0SIaRtELk8aW9eldvC2";
+    }
+
+    // Predicciones: el dueño puede crear/leer/actualizar las suyas.
+    // El admin además puede actualizar las de cualquiera (para cerrar jornada
+    // y calcular aciertos/fallos finales de todos).
+    match /predicciones/{docId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+      allow update: if request.auth != null &&
+        (request.resource.data.uid == request.auth.uid ||
+         request.auth.uid == "CNTWR8yNC0SIaRtELk8aW9eldvC2");
+      allow delete: if request.auth.uid == "CNTWR8yNC0SIaRtELk8aW9eldvC2";
+    }
+
+  }
+}

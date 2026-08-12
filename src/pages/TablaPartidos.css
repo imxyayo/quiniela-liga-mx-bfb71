@@ -1,218 +1,271 @@
-.tabla-partidos-container {
-  max-width: 900px;
+/* ===== Tokens (mismos que Dashboard.css) ===== */
+:root {
+  --dash-bg: #0a0a0b;
+  --dash-surface: #151518;
+  --dash-surface-alt: #1c1c20;
+  --dash-border: #2a2a2f;
+  --dash-gold: #c9a961;
+  --dash-gold-soft: rgba(201, 169, 97, 0.14);
+  --dash-white: #f2f1ec;
+  --dash-muted: #8b8b91;
+  --dash-acierto: #7fae86;
+  --dash-acierto-soft: rgba(127, 174, 134, 0.12);
+  --dash-fallo: #b06868;
+  --dash-fallo-soft: rgba(176, 104, 104, 0.12);
+}
+
+.tp-page {
+  min-height: 100vh;
+  width: 100%;
+  background: var(--dash-bg);
+}
+
+.tp-container {
+  max-width: 920px;
   margin: 0 auto;
-  padding: 20px;
-}
-
-.tabla-header {
-  text-align: center;
-  margin-bottom: 30px;
-  border-bottom: 2px solid #f4c430;
-  padding-bottom: 15px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 20px;
-}
-
-.tabla-header h2 {
-  font-family: "Oswald", sans-serif;
-  font-size: 2rem;
-  color: #1a1a1a;
-  margin: 0;
-}
-
-.enviadas-label {
-  background-color: #d4edda;
-  color: #155724;
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  margin: 0;
-}
-
-.error-mensaje {
-  background-color: #f8d7da;
-  color: #721c24;
-  padding: 12px 16px;
-  border-radius: 6px;
-  margin-bottom: 20px;
+  padding: 24px 16px 56px;
+  color: var(--dash-white);
   font-family: "Inter", sans-serif;
-  border-left: 4px solid #f5c6cb;
 }
 
-.partidos-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
+.tp-estado {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--dash-bg);
+  color: var(--dash-muted);
+  font-family: "Inter", sans-serif;
+  text-align: center;
+  padding: 0 24px;
 }
 
-.partido-card {
-  background: white;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 16px;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+.tp-estado--error {
+  color: var(--dash-fallo);
 }
 
-.partido-card:hover {
-  border-color: #f4c430;
-  box-shadow: 0 4px 12px rgba(244, 196, 48, 0.15);
+/* ===== Header ===== */
+.tp-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--dash-border);
 }
 
-.partido-equipos {
+.tp-eyebrow {
+  display: block;
+  font-family: "Oswald", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dash-gold);
+  margin-bottom: 4px;
+}
+
+.tp-header h2 {
+  font-family: "Oswald", sans-serif;
+  font-weight: 600;
+  font-size: 26px;
+  margin: 0;
+}
+
+.tp-badge {
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 20px;
+}
+
+.tp-badge--enviado {
+  color: var(--dash-acierto);
+  background: var(--dash-acierto-soft);
+}
+
+/* ===== Error / confirmacion ===== */
+.tp-error {
+  font-family: "Inter", sans-serif;
+  font-size: 13.5px;
+  color: var(--dash-fallo);
+  background: var(--dash-fallo-soft);
+  border-left: 3px solid var(--dash-fallo);
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.tp-confirmacion {
+  font-family: "Inter", sans-serif;
+  font-size: 13.5px;
+  color: var(--dash-acierto);
+  background: var(--dash-acierto-soft);
+  border-left: 3px solid var(--dash-acierto);
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin-top: 24px;
+  text-align: center;
+}
+
+/* ===== Lista de partidos ===== */
+.tp-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tp-card {
+  background: var(--dash-surface);
+  border: 1px solid var(--dash-border);
+  border-radius: 4px;
+  padding: 18px 20px;
+  transition: border-color 0.2s ease;
+}
+
+.tp-card:hover {
+  border-color: var(--dash-gold-soft);
+}
+
+.tp-card-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-.equipo-local,
-.equipo-visitante {
-  flex: 1;
-  text-align: center;
-}
-
-.nombre-equipo {
-  font-family: "Inter", sans-serif;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #333;
-  margin: 0;
-  line-height: 1.3;
-}
-
-.vs {
-  color: #999;
-  font-size: 0.85rem;
-  font-weight: 600;
-  font-family: "Inter", sans-serif;
-}
-
-.partido-fecha {
-  text-align: center;
+  flex-wrap: wrap;
+  gap: 8px;
   margin-bottom: 14px;
-  padding: 8px 0;
-  border-top: 1px solid #f0f0f0;
-  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--dash-border);
 }
 
-.partido-fecha p {
-  font-family: "Inter", sans-serif;
-  font-size: 0.8rem;
-  color: #666;
-  margin: 0;
-}
-
-.predicciones-botones {
+.tp-equipos {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.tp-equipo {
+  font-family: "Oswald", sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.tp-vs {
+  font-family: "Inter", sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dash-muted);
+}
+
+.tp-fecha {
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  color: var(--dash-muted);
+  white-space: nowrap;
+}
+
+/* Un solo renglon con las 3 opciones, siempre, sin importar el ancho de pantalla */
+.tp-opciones {
+  display: flex;
   gap: 8px;
 }
 
-.btn-prediccion {
-  padding: 10px 12px;
-  background-color: #f5f5f5;
-  color: #333;
-  border: 2px solid #ddd;
-  border-radius: 6px;
+.tp-opcion {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 10px;
+  background: var(--dash-surface-alt);
+  border: 1px solid var(--dash-border);
+  border-radius: 4px;
+  color: var(--dash-white);
   font-family: "Inter", sans-serif;
-  font-size: 0.9rem;
+  font-size: 13px;
   font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-prediccion:hover:not(:disabled) {
-  background-color: #fff;
-  border-color: #f4c430;
-  color: #f4c430;
-}
-
-.btn-prediccion.selected {
-  background-color: #f4c430;
-  color: #1a1a1a;
-  border-color: #f4c430;
-}
-
-.btn-prediccion:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.enviar-container {
   text-align: center;
-  margin-top: 30px;
-}
-
-.btn-enviar {
-  padding: 14px 40px;
-  background-color: #f4c430;
-  color: #1a1a1a;
-  border: none;
-  border-radius: 6px;
-  font-family: "Oswald", sans-serif;
-  font-size: 1rem;
-  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tp-opcion--empate {
+  color: var(--dash-muted);
+  font-style: normal;
+}
+
+.tp-opcion:hover:not(:disabled) {
+  border-color: var(--dash-gold);
+  color: var(--dash-gold);
+}
+
+.tp-opcion--activa {
+  background: var(--dash-gold-soft);
+  border-color: var(--dash-gold);
+  color: var(--dash-gold);
+}
+
+.tp-opcion:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.tp-opcion--activa:disabled {
+  opacity: 1;
+}
+
+/* ===== Enviar ===== */
+.tp-enviar-container {
+  text-align: center;
+  margin-top: 28px;
+}
+
+.tp-btn-enviar {
+  padding: 14px 44px;
+  background: var(--dash-gold);
+  color: #14120c;
+  border: none;
+  border-radius: 4px;
+  font-family: "Oswald", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  transition: all 0.3s ease;
+  cursor: pointer;
+  transition: filter 0.15s ease, transform 0.15s ease;
 }
 
-.btn-enviar:hover {
-  background-color: #e6b800;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(244, 196, 48, 0.3);
+.tp-btn-enviar:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
 }
 
-.btn-enviar:active {
+.tp-btn-enviar:active {
   transform: translateY(0);
 }
 
-.confirmacion {
-  text-align: center;
-  margin-top: 20px;
-  padding: 16px;
-  background-color: #d4edda;
-  border: 1px solid #c3e6cb;
-  border-radius: 6px;
-}
-
-.confirmacion p {
-  font-family: "Inter", sans-serif;
-  color: #155724;
-  margin: 0;
-  font-weight: 500;
-}
-
-/* Responsive */
-@media (max-width: 640px) {
-  .tabla-header {
-    flex-direction: column;
-    gap: 10px;
+/* ===== Responsive ===== */
+@media (max-width: 520px) {
+  .tp-header h2 {
+    font-size: 21px;
   }
 
-  .tabla-header h2 {
-    font-size: 1.5rem;
+  .tp-card {
+    padding: 14px 14px;
   }
 
-  .partidos-grid {
-    grid-template-columns: 1fr;
+  .tp-equipo {
+    font-size: 13px;
   }
 
-  .predicciones-botones {
-    flex-direction: row;
-    gap: 6px;
-  }
-
-  .btn-prediccion {
-    flex: 1;
-    padding: 8px 6px;
-    font-size: 0.8rem;
+  .tp-opcion {
+    font-size: 11.5px;
+    padding: 11px 6px;
   }
 }

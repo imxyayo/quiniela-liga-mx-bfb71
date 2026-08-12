@@ -1,0 +1,162 @@
+:root {
+  --dash-bg: #0a0a0b;
+  --dash-surface: #151518;
+  --dash-surface-alt: #1c1c20;
+  --dash-border: #2a2a2f;
+  --dash-gold: #c9a961;
+  --dash-gold-soft: rgba(201, 169, 97, 0.14);
+  --dash-white: #f2f1ec;
+  --dash-muted: #8b8b91;
+  --dash-fallo: #b06868;
+  --dash-fallo-soft: rgba(176, 104, 104, 0.12);
+}
+
+.ap-page {
+  min-height: 100%;
+  background: var(--dash-bg);
+  padding: 32px 20px 56px;
+  font-family: "Inter", sans-serif;
+  color: var(--dash-white);
+}
+
+/* ===== Header ===== */
+.ap-header {
+  max-width: 620px;
+  margin: 0 auto 40px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--dash-border);
+}
+
+.ap-eyebrow {
+  display: block;
+  font-family: "Oswald", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dash-gold);
+  margin-bottom: 6px;
+}
+
+.ap-header h1 {
+  font-family: "Oswald", sans-serif;
+  font-size: 1.9rem;
+  font-weight: 600;
+  color: var(--dash-white);
+  margin: 0;
+}
+
+/* ===== Content / steps ===== */
+.ap-content {
+  max-width: 620px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.ap-step {
+  display: flex;
+  gap: 20px;
+}
+
+/* left column: numbered marker + connecting line */
+.ap-step-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  width: 36px;
+}
+
+.ap-step-number {
+  font-family: "Oswald", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--dash-gold);
+  background: var(--dash-gold-soft);
+  border: 1px solid var(--dash-border);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ap-step-line {
+  flex: 1;
+  width: 1px;
+  background: var(--dash-border);
+  margin-top: 8px;
+  min-height: 40px;
+}
+
+.ap-step-body {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 40px;
+}
+
+.ap-step-eyebrow {
+  display: block;
+  font-family: "Oswald", sans-serif;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dash-muted);
+  margin-bottom: 4px;
+}
+
+.ap-step-body h2 {
+  font-family: "Oswald", sans-serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--dash-white);
+  margin: 0 0 6px;
+}
+
+.ap-step-desc {
+  font-size: 13.5px;
+  color: var(--dash-muted);
+  margin: 0 0 16px;
+  line-height: 1.5;
+}
+
+/* ===== Acceso denegado ===== */
+.ap-denegado-page {
+  min-height: 100vh;
+  background: var(--dash-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.ap-denegado-card {
+  background: var(--dash-surface);
+  border: 1px solid var(--dash-fallo);
+  border-radius: 4px;
+  padding: 28px 32px;
+  text-align: center;
+  font-family: "Inter", sans-serif;
+  color: var(--dash-white);
+}
+
+.ap-denegado-eyebrow {
+  display: block;
+  font-family: "Oswald", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dash-fallo);
+  margin-bottom: 8px;
+}
+
+.ap-denegado-card p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--dash-muted);
+}

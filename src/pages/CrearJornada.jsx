@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { getAuth } from "firebase/auth";
 import app from "../services/firebase";
-
 import "./CrearJornada.css";
 
 const auth = getAuth(app);
@@ -16,7 +15,7 @@ export default function CrearJornada() {
     e.preventDefault();
 
     if (!numeroJornada || numeroJornada < 1 || numeroJornada > 17) {
-      setMensaje("❌ Ingresa un número de jornada entre 1 y 17");
+      setMensaje("Ingresa un número de jornada entre 1 y 17.");
       setTipoMensaje("error");
       return;
     }
@@ -30,7 +29,6 @@ export default function CrearJornada() {
       if (!currentUser) {
         throw new Error("No estás autenticado");
       }
-
       const token = await currentUser.getIdToken();
 
       // Llamar la Cloud Function vía fetch
@@ -55,7 +53,7 @@ export default function CrearJornada() {
       }
 
       setMensaje(
-        `✅ Jornada ${numeroJornada} creada exitosamente con ${data.partidos} partidos`
+        `Jornada ${numeroJornada} creada con ${data.partidos} partidos.`
       );
       setTipoMensaje("exito");
       setNumeroJornada(""); // Limpiar input
@@ -64,13 +62,13 @@ export default function CrearJornada() {
 
       // Manejo de errores
       if (error.message.includes("No estás autenticado")) {
-        setMensaje("❌ No estás autenticado");
+        setMensaje("No estás autenticado.");
       } else if (error.message.includes("ya existe")) {
-        setMensaje(`❌ La jornada ${numeroJornada} ya existe`);
+        setMensaje(`La jornada ${numeroJornada} ya existe.`);
       } else if (error.message.includes("No hay partidos")) {
-        setMensaje(`❌ No hay partidos para la jornada ${numeroJornada}`);
+        setMensaje(`No hay partidos para la jornada ${numeroJornada}.`);
       } else {
-        setMensaje(`❌ Error: ${error.message}`);
+        setMensaje(`Error: ${error.message}`);
       }
       setTipoMensaje("error");
     } finally {
@@ -79,10 +77,12 @@ export default function CrearJornada() {
   };
 
   return (
-    <div className="crear-jornada">
-      <form onSubmit={handleCrearJornada}>
-        <div className="form-group">
-          <label htmlFor="numeroJornada">Número de Jornada:</label>
+    <div className="crj-card">
+      <form onSubmit={handleCrearJornada} className="crj-form">
+        <div className="crj-group">
+          <label htmlFor="numeroJornada" className="crj-label">
+            Número de jornada
+          </label>
           <input
             id="numeroJornada"
             type="number"
@@ -90,18 +90,18 @@ export default function CrearJornada() {
             max="17"
             value={numeroJornada}
             onChange={(e) => setNumeroJornada(e.target.value)}
-            placeholder="Ej: 1"
+            placeholder="Ej. 1"
             disabled={cargando}
+            className="crj-input"
           />
         </div>
-
-        <button type="submit" disabled={cargando} className="btn-crear">
-          {cargando ? "⏳ Creando..." : "📝 Crear Jornada"}
+        <button type="submit" disabled={cargando} className="crj-btn-crear">
+          {cargando ? "Creando…" : "Crear jornada"}
         </button>
       </form>
 
       {mensaje && (
-        <div className={`mensaje ${tipoMensaje}`}>
+        <div className={`crj-mensaje crj-mensaje-${tipoMensaje}`}>
           {mensaje}
         </div>
       )}
