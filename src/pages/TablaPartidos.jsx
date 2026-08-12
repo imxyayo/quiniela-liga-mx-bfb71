@@ -18,6 +18,7 @@ export default function TablaPartidos() {
   const [partidos, setPartidos] = useState([]);
   const [predicciones, setPredicciones] = useState({}); // { id_partido: "local"|"empate"|"visitante" }
   const [enviadas, setEnviadas] = useState(false);
+  const [pagoConfirmado, setPagoConfirmado] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
 
@@ -41,6 +42,16 @@ export default function TablaPartidos() {
         const datosJornada = jornadaDoc.data();
         setJornada(datosJornada);
         setPartidos(datosJornada.partidos || []);
+
+        // 1.5 Verificar si el admin ya confirmó el pago de este usuario
+        // para esta jornada. Si no, no se muestran los partidos.
+        const yaPago = !!(datosJornada.pagos && datosJornada.pagos[usuario.uid]);
+        setPagoConfirmado(yaPago);
+
+        if (!yaPago) {
+          setCargando(false);
+          return;
+        }
 
         // 2. Verificar si ya envio predicciones
         const docId = `jornada_${datosJornada.numero}_${usuario.uid}`;
@@ -135,6 +146,27 @@ export default function TablaPartidos() {
     return (
       <div className="tp-page">
         <div className="tp-estado">No hay partidos disponibles.</div>
+      </div>
+    );
+  }
+
+  // Si el admin todavía no marca el pago de este usuario para esta
+  // jornada, no se muestra ningún partido ni formulario de predicción.
+  if (!pagoConfirmado) {
+    return (
+      <div className="tp-page">
+        <div className="tp-container">
+          <header className="tp-header">
+            <div>
+              <span className="tp-eyebrow">Predicciones</span>
+              <h2>Jornada {jornada.numero}</h2>
+            </div>
+          </header>
+          <div className="tp-estado tp-estado--pago">
+            Aún no se ha confirmado tu pago de esta jornada. Avísale al admin
+            en cuanto transfieras o pagues tu cuota para que puedas predecir.
+          </div>
+        </div>
       </div>
     );
   }

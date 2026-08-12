@@ -1,6 +1,7 @@
 import React from "react";
 import { useAuth } from "../hooks/useAuth";
 import CrearJornada from "./CrearJornada";
+import GestionPagos from "./GestionPagos";
 import CerrarJornada from "./CerrarJornada";
 import "./AdminPanel.css";
 
@@ -48,6 +49,22 @@ export default function AdminPanel() {
         <section className="ap-step">
           <div className="ap-step-marker">
             <span className="ap-step-number">02</span>
+            <span className="ap-step-line" aria-hidden="true" />
+          </div>
+          <div className="ap-step-body">
+            <span className="ap-step-eyebrow">Durante la jornada</span>
+            <h2>Confirmar pagos</h2>
+            <p className="ap-step-desc">
+              Marca quién ya pagó su cuota. Sin esto, esa persona no ve el
+              formulario de predicción.
+            </p>
+            <GestionPagos />
+          </div>
+        </section>
+
+        <section className="ap-step">
+          <div className="ap-step-marker">
+            <span className="ap-step-number">03</span>
           </div>
           <div className="ap-step-body">
             <span className="ap-step-eyebrow">Al terminar la jornada</span>

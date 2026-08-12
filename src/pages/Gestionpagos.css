@@ -1,0 +1,105 @@
+:root {
+  --dash-bg: #0a0a0b;
+  --dash-surface: #151518;
+  --dash-surface-alt: #1c1c20;
+  --dash-border: #2a2a2f;
+  --dash-gold: #c9a961;
+  --dash-gold-soft: rgba(201, 169, 97, 0.14);
+  --dash-white: #f2f1ec;
+  --dash-muted: #8b8b91;
+  --dash-acierto: #7fae86;
+  --dash-acierto-soft: rgba(127, 174, 134, 0.12);
+  --dash-fallo: #b06868;
+  --dash-fallo-soft: rgba(176, 104, 104, 0.12);
+}
+
+.gp-card {
+  background: var(--dash-surface);
+  border: 1px solid var(--dash-border);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 520px;
+}
+
+.gp-info {
+  margin-bottom: 20px;
+}
+
+.gp-eyebrow {
+  font-family: "Oswald", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 13px;
+  color: var(--dash-gold);
+}
+
+.gp-resumen {
+  font-family: "Inter", sans-serif;
+  color: var(--dash-muted);
+  font-size: 14px;
+  margin-top: 6px;
+}
+
+.gp-cargando {
+  font-family: "Inter", sans-serif;
+  color: var(--dash-muted);
+  padding: 24px;
+}
+
+.gp-error {
+  background: var(--dash-fallo-soft);
+  color: var(--dash-fallo);
+  border: 1px solid var(--dash-fallo);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.gp-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gp-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--dash-surface-alt);
+  border: 1px solid var(--dash-border);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.gp-nombre {
+  font-family: "Inter", sans-serif;
+  color: var(--dash-white);
+  font-size: 14px;
+}
+
+.gp-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  color: var(--dash-muted);
+}
+
+.gp-toggle input[type="checkbox"] {
+  accent-color: var(--dash-gold);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.gp-toggle-on .gp-toggle-texto {
+  color: var(--dash-acierto);
+  font-weight: 600;
+}

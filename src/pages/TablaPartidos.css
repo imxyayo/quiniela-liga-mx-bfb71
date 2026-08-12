@@ -268,4 +268,13 @@
     font-size: 11.5px;
     padding: 11px 6px;
   }
+  .tp-estado--pago {
+  color: var(--dash-gold);
+  background: var(--dash-gold-soft);
+  border: 1px solid var(--dash-gold);
+  border-radius: 8px;
+  padding: 16px;
+  font-family: "Inter", sans-serif;
+}
+
 }
