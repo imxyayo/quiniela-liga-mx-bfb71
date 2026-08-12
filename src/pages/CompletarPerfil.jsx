@@ -1,7 +1,7 @@
 // src/pages/CompletarPerfil.jsx
 import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
-import { actualizarNombre } from "../services/usuarios";
+import { actualizarNombre } from "../services/Usuarios";
 import "./Login.css"; // Reusamos el mismo estilo de boleto
 
 export default function CompletarPerfil() {

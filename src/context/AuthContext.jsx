@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../services/firebase";
-import { crearUsuarioSiNoExiste } from "../services/usuarios";
+import { crearUsuarioSiNoExiste } from "../services/Usuarios";
 import { AuthContext } from "./AuthContextObject";
 
 export function AuthProvider({ children }) {
