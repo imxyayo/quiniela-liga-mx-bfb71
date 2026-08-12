@@ -1,0 +1,103 @@
+.crear-jornada {
+  width: 100%;
+}
+
+.crear-jornada form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.form-group input {
+  padding: 10px 12px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: "Inter", sans-serif;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #f4c430;
+}
+
+.form-group input:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+  color: #999;
+}
+
+.btn-crear {
+  padding: 12px 20px;
+  background-color: #f4c430;
+  color: #1a1a1a;
+  border: none;
+  border-radius: 6px;
+  font-family: "Oswald", sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.1s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-crear:hover:not(:disabled) {
+  background-color: #e6b800;
+  transform: translateY(-2px);
+}
+
+.btn-crear:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-crear:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.mensaje {
+  margin-top: 15px;
+  padding: 12px 15px;
+  border-radius: 6px;
+  font-family: "Inter", sans-serif;
+  font-size: 0.95rem;
+  animation: slideIn 0.3s ease-out;
+}
+
+.mensaje.exito {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.mensaje.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
