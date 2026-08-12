@@ -7,27 +7,29 @@
   --dash-gold-soft: rgba(201, 169, 97, 0.14);
   --dash-white: #f2f1ec;
   --dash-muted: #8b8b91;
+  --dash-acierto: #7fae86;
+  --dash-acierto-soft: rgba(127, 174, 134, 0.12);
   --dash-fallo: #b06868;
   --dash-fallo-soft: rgba(176, 104, 104, 0.12);
 }
 
-.ap-page {
-  min-height: 100%;
-  background: var(--dash-bg);
-  padding: 32px 20px 56px;
+.cj-cargando {
+  color: var(--dash-muted);
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+}
+
+.cj-card {
+  background: var(--dash-surface);
+  border: 1px solid var(--dash-border);
+  border-radius: 4px;
+  padding: 20px;
+  max-width: 480px;
   font-family: "Inter", sans-serif;
   color: var(--dash-white);
 }
 
-/* ===== Header ===== */
-.ap-header {
-  max-width: 620px;
-  margin: 0 auto 40px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--dash-border);
-}
-
-.ap-eyebrow {
+.cj-eyebrow {
   display: block;
   font-family: "Oswald", sans-serif;
   font-size: 12px;
@@ -35,128 +37,155 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--dash-gold);
-  margin-bottom: 6px;
-}
-
-.ap-header h1 {
-  font-family: "Oswald", sans-serif;
-  font-size: 1.9rem;
-  font-weight: 600;
-  color: var(--dash-white);
-  margin: 0;
-}
-
-/* ===== Content / steps ===== */
-.ap-content {
-  max-width: 620px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-}
-
-.ap-step {
-  display: flex;
-  gap: 20px;
-}
-
-/* left column: numbered marker + connecting line */
-.ap-step-marker {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex-shrink: 0;
-  width: 36px;
-}
-
-.ap-step-number {
-  font-family: "Oswald", sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: var(--dash-gold);
-  background: var(--dash-gold-soft);
-  border: 1px solid var(--dash-border);
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.ap-step-line {
-  flex: 1;
-  width: 1px;
-  background: var(--dash-border);
-  margin-top: 8px;
-  min-height: 40px;
-}
-
-.ap-step-body {
-  flex: 1;
-  min-width: 0;
-  padding-bottom: 40px;
-}
-
-.ap-step-eyebrow {
-  display: block;
-  font-family: "Oswald", sans-serif;
-  font-size: 10.5px;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--dash-muted);
   margin-bottom: 4px;
 }
 
-.ap-step-body h2 {
-  font-family: "Oswald", sans-serif;
-  font-size: 1.15rem;
-  font-weight: 600;
-  color: var(--dash-white);
-  margin: 0 0 6px;
-}
-
-.ap-step-desc {
-  font-size: 13.5px;
+.cj-progreso {
+  font-size: 14px;
   color: var(--dash-muted);
   margin: 0 0 16px;
+}
+
+.cj-advertencia {
+  font-size: 13px;
+  color: var(--dash-fallo);
+  background: var(--dash-fallo-soft);
+  border-left: 3px solid var(--dash-fallo);
+  border-radius: 4px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
   line-height: 1.5;
 }
 
-/* ===== Acceso denegado ===== */
-.ap-denegado-page {
-  min-height: 100vh;
-  background: var(--dash-bg);
+.cj-forzar {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 20px;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: var(--dash-white);
+  cursor: pointer;
 }
 
-.ap-denegado-card {
-  background: var(--dash-surface);
-  border: 1px solid var(--dash-fallo);
+.cj-error {
+  font-size: 13px;
+  color: var(--dash-fallo);
+  margin-bottom: 12px;
+}
+
+.cj-btn-cerrar {
+  width: 100%;
+  padding: 12px 20px;
+  background: var(--dash-gold);
+  color: #14120c;
+  border: none;
   border-radius: 4px;
-  padding: 28px 32px;
-  text-align: center;
+  font-family: "Oswald", sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.cj-btn-cerrar:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.cj-btn-cerrar:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ===== Resultado final ===== */
+.cj-resultado {
+  background: var(--dash-surface);
+  border: 1px solid var(--dash-gold-soft);
+  border-radius: 4px;
+  padding: 24px;
+  max-width: 480px;
   font-family: "Inter", sans-serif;
   color: var(--dash-white);
 }
 
-.ap-denegado-eyebrow {
-  display: block;
+.cj-resultado h3 {
   font-family: "Oswald", sans-serif;
-  font-size: 12px;
+  font-size: 18px;
   font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--dash-fallo);
-  margin-bottom: 8px;
+  margin: 0 0 4px;
 }
 
-.ap-denegado-card p {
-  margin: 0;
-  font-size: 14px;
+.cj-resultado-label {
+  font-family: "Oswald", sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dash-gold);
+  margin: 0 0 4px;
+}
+
+.cj-participantes {
+  font-size: 12.5px;
   color: var(--dash-muted);
+  margin: 0 0 14px;
+}
+
+.cj-ganadores {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cj-ganadores li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--dash-gold-soft);
+  border-radius: 4px;
+  padding: 12px 14px;
+}
+
+.cj-ganador-nombre {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.cj-ganador-aciertos {
+  font-size: 12.5px;
+  color: var(--dash-muted);
+}
+
+.cj-ganador-premio {
+  font-family: "Oswald", sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--dash-gold);
+  white-space: nowrap;
+}
+
+/* ===== Estado de la siguiente jornada (creación automática) ===== */
+.cj-siguiente {
+  margin: 16px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  border-radius: 4px;
+  padding: 10px 14px;
+}
+
+.cj-siguiente-ok {
+  color: var(--dash-acierto);
+  background: var(--dash-acierto-soft);
+  border-left: 3px solid var(--dash-acierto);
+}
+
+.cj-siguiente-error {
+  color: var(--dash-fallo);
+  background: var(--dash-fallo-soft);
+  border-left: 3px solid var(--dash-fallo);
 }

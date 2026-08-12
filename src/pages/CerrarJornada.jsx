@@ -11,7 +11,13 @@ import {
 import { db, auth } from "../services/firebase";
 import "./CerrarJornada.css";
 
-const PREMIO_TOTAL = 2700;
+// Cuota que paga cada persona por jornada. El premio total no es fijo:
+// se calcula como CUOTA_POR_PERSONA * cuántos mandaron predicción esa semana.
+const CUOTA_POR_PERSONA = 100;
+const ULTIMA_JORNADA_TEMPORADA = 17;
+
+const FUNCTION_URL =
+  "https://crearjornadadesdeapi-faiy4zqaaq-uc.a.run.app";
 
 function calcularAciertos(partidos, predicciones) {
   let aciertos = 0;
@@ -27,6 +33,36 @@ function calcularAciertos(partidos, predicciones) {
     }
   });
   return { aciertos, fallos };
+}
+
+// Llama a la misma Cloud Function que usa CrearJornada.jsx, para crear
+// automáticamente la siguiente jornada en cuanto se cierra la actual.
+async function crearSiguienteJornada(numeroSiguiente) {
+  const currentUser = auth.currentUser;
+  if (!currentUser) {
+    throw new Error("No estás autenticado");
+  }
+  const token = await currentUser.getIdToken(true);
+
+  const response = await fetch(FUNCTION_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      numeroJornada: numeroSiguiente,
+      activarInmediatamente: true,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || "Error desconocido al crear la siguiente jornada");
+  }
+
+  return data;
 }
 
 export default function CerrarJornada() {
@@ -55,23 +91,6 @@ export default function CerrarJornada() {
   const handleCerrar = async () => {
     setError("");
     setProcesando(true);
-
-    // --- DIAGNÓSTICO: confirmar quién está realmente logueado en este momento ---
-    console.log("[cerrar] auth.currentUser completo:", auth.currentUser);
-    console.log("[cerrar] uid actual:", auth.currentUser?.uid);
-    console.log(
-      "[cerrar] ¿coincide con el admin esperado?",
-      auth.currentUser?.uid === "CNTWR8yNC0SIaRtELk8aW9eldvC2"
-    );
-    try {
-      const token = await auth.currentUser?.getIdTokenResult(true); // true = forzar refresh
-      console.log("[cerrar] token claims:", token?.claims);
-      console.log("[cerrar] token expira:", token?.expirationTime);
-    } catch (tokenErr) {
-      console.error("[cerrar] No se pudo obtener el token:", tokenErr);
-    }
-    // --- FIN DIAGNÓSTICO ---
-
     try {
       let snap;
       try {
@@ -81,7 +100,7 @@ export default function CerrarJornada() {
         );
         snap = await getDocs(q);
       } catch (err) {
-        console.error("[cerrar] Falló leyendo predicciones. code:", err.code, "err:", err);
+        console.error("[cerrar] Falló leyendo predicciones:", err.code, err);
         throw new Error("No se pudieron leer las predicciones (revisa reglas de 'predicciones').");
       }
 
@@ -108,24 +127,23 @@ export default function CerrarJornada() {
         if (aciertos > mejorAciertos) mejorAciertos = aciertos;
       });
 
+      // Premio dinámico: cuota * cuántos mandaron predicción esta jornada
+      // (no depende de los 30 registrados, solo de quien sí participó).
+      const numParticipantes = filas.length;
+      const premioTotal = CUOTA_POR_PERSONA * numParticipantes;
+
       const ganadores = filas.filter((f) => f.aciertos === mejorAciertos);
       const premioIndividual =
-        Math.round((PREMIO_TOTAL / ganadores.length) * 100) / 100;
+        Math.round((premioTotal / ganadores.length) * 100) / 100;
 
       let nombresPorUid = {};
       try {
-        // --- DIAGNÓSTICO extra justo antes de la lectura que falla ---
-        console.log(
-          "[cerrar] justo antes de leer usuarios, uid:",
-          auth.currentUser?.uid
-        );
         const usuariosSnap = await getDocs(collection(db, "usuarios"));
-        console.log("[cerrar] lectura de usuarios OK, docs:", usuariosSnap.size);
         usuariosSnap.docs.forEach((u) => {
           nombresPorUid[u.id] = u.data().nombre || "Jugador";
         });
       } catch (err) {
-        console.error("[cerrar] Falló leyendo usuarios. code:", err.code, "err:", err);
+        console.error("[cerrar] Falló leyendo usuarios:", err.code, err);
         throw new Error("No se pudieron leer los perfiles de usuario (revisa reglas de 'usuarios').");
       }
 
@@ -139,16 +157,53 @@ export default function CerrarJornada() {
         cerradaEn: serverTimestamp(),
         ganadores: ganadoresConNombre,
         premioIndividual,
+        premioTotal,
+        numParticipantes,
+        cuotaPorPersona: CUOTA_POR_PERSONA,
       });
 
       try {
         await batch.commit();
       } catch (err) {
-        console.error("[cerrar] Falló el batch.commit. code:", err.code, "err:", err);
+        console.error("[cerrar] Falló el batch.commit:", err.code, err);
         throw new Error("El batch de escritura falló (revisa reglas de 'predicciones' o 'jornadas').");
       }
 
-      setResultado({ ganadores: ganadoresConNombre, premioIndividual });
+      // Jornada cerrada con éxito. Ahora, sin bloquear lo anterior, intenta
+      // crear automáticamente la siguiente y dejarla en_curso.
+      let siguienteInfo = null;
+      const numeroSiguiente = jornada.numero + 1;
+
+      if (numeroSiguiente > ULTIMA_JORNADA_TEMPORADA) {
+        siguienteInfo = {
+          ok: true,
+          mensaje: "Era la última jornada de la temporada. No se crea una siguiente.",
+        };
+      } else {
+        try {
+          const data = await crearSiguienteJornada(numeroSiguiente);
+          siguienteInfo = {
+            ok: true,
+            mensaje: `Jornada ${numeroSiguiente} creada y publicada con ${data.partidos} partidos.`,
+          };
+        } catch (err) {
+          console.error("[cerrar] No se pudo crear la siguiente jornada:", err);
+          siguienteInfo = {
+            ok: false,
+            mensaje:
+              `No se pudo crear la jornada ${numeroSiguiente} automáticamente (${err.message}). ` +
+              `Créala manualmente desde "Crear jornada" cuando esté disponible.`,
+          };
+        }
+      }
+
+      setResultado({
+        ganadores: ganadoresConNombre,
+        premioIndividual,
+        premioTotal,
+        numParticipantes,
+        siguienteInfo,
+      });
     } catch (err) {
       console.error("Error cerrando jornada:", err);
       setError(err.message || "Ocurrió un error al cerrar la jornada. Intenta de nuevo.");
@@ -172,6 +227,10 @@ export default function CerrarJornada() {
         <p className="cj-resultado-label">
           {resultado.ganadores.length > 1 ? "Ganadores" : "Ganador"}
         </p>
+        <p className="cj-participantes">
+          {resultado.numParticipantes} participantes · $
+          {resultado.premioTotal.toLocaleString("es-MX")} repartidos
+        </p>
         <ul className="cj-ganadores">
           {resultado.ganadores.map((g) => (
             <li key={g.uid}>
@@ -183,6 +242,18 @@ export default function CerrarJornada() {
             </li>
           ))}
         </ul>
+
+        {resultado.siguienteInfo && (
+          <p
+            className={
+              resultado.siguienteInfo.ok
+                ? "cj-siguiente cj-siguiente-ok"
+                : "cj-siguiente cj-siguiente-error"
+            }
+          >
+            {resultado.siguienteInfo.mensaje}
+          </p>
+        )}
       </div>
     );
   }

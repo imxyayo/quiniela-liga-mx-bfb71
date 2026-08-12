@@ -7,22 +7,73 @@ const admin = require("firebase-admin");
 const axios = require("axios");
 
 initializeApp();
+
 const db = getFirestore();
 
 const SPORTSDB_API_KEY = defineSecret("SPORTSDB_API_KEY");
+
 const LIGA_MX_ID = 4350;
 const TEMPORADA_ACTUAL = "2026-2027";
+
 const ADMIN_UID = "CNTWR8yNC0SIaRtELk8aW9eldvC2";
 
 /**
- * Trae los resultados actuales de los partidos de Liga MX desde TheSportsDB
- * y actualiza el campo "resultado" y "estado" de cada partido en la jornada activa.
+ * ============================================================================
+ * OBTENER PARTIDOS DE UNA JORNADA ESPECÍFICA
+ * ============================================================================
  *
- * Regla de negocio: solo actualiza partidos que ya tienen resultado "FT" en la API
- * y que aún no tenían resultado guardado localmente (evita pisar datos ya calificados).
+ * Usamos eventsround.php porque necesitamos pedir directamente:
+ *
+ * Jornada 4
+ * Jornada 5
+ * Jornada 6
+ * etc.
+ *
+ * TheSportsDB utiliza:
+ *
+ * id = liga
+ * r  = número de jornada
+ * s  = temporada
+ */
+async function obtenerPartidosJornada(numeroJornada) {
+  console.log(
+    `Buscando Jornada ${numeroJornada} de la temporada ${TEMPORADA_ACTUAL}...`
+  );
+
+  const respuesta = await axios.get(
+    "https://www.thesportsdb.com/api/v1/json/" +
+      SPORTSDB_API_KEY.value() +
+      "/eventsround.php",
+    {
+      params: {
+        id: LIGA_MX_ID,
+        r: numeroJornada,
+        s: TEMPORADA_ACTUAL,
+      },
+    }
+  );
+
+  const eventos = respuesta.data.events || [];
+
+  console.log(
+    `TheSportsDB devolvió ${eventos.length} partidos para la Jornada ${numeroJornada}.`
+  );
+
+  return eventos;
+}
+
+/**
+ * ============================================================================
+ * ACTUALIZAR RESULTADOS DE LA JORNADA ACTIVA
+ * ============================================================================
+ *
+ * Busca la jornada "en_curso".
+ *
+ * Después consulta TheSportsDB para esa jornada.
+ *
+ * Solo actualiza partidos que ya terminaron (FT).
  */
 async function actualizarResultadosJornadaActiva() {
-  // 1. Busca la jornada que esté "en_curso"
   const jornadasSnap = await db
     .collection("jornadas")
     .where("estado", "==", "en_curso")
@@ -31,54 +82,94 @@ async function actualizarResultadosJornadaActiva() {
 
   if (jornadasSnap.empty) {
     console.log("No hay jornada en curso, nada que actualizar.");
-    return { actualizados: 0 };
+
+    return {
+      actualizados: 0,
+    };
   }
 
   const jornadaDoc = jornadasSnap.docs[0];
   const jornada = jornadaDoc.data();
 
-  // 2. Pregunta a la API todos los partidos de la temporada (una sola llamada)
-  const respuesta = await axios.get(
-    "https://www.thesportsdb.com/api/v1/json/" + SPORTSDB_API_KEY.value() + "/eventsseason.php",
-    {
-      params: {
-        id: LIGA_MX_ID,
-        s: TEMPORADA_ACTUAL,
-      },
-    }
-  );
+  console.log(`Actualizando Jornada ${jornada.numero}...`);
 
-  const todosLosPartidos = respuesta.data.events || [];
+  // Obtener únicamente los partidos de esta jornada
+  const partidosApi = await obtenerPartidosJornada(jornada.numero);
 
-  // 3. Filtra solo los partidos de la jornada activa por número de ronda
-  const partidosApi = todosLosPartidos.filter(
-    (p) => parseInt(p.intRound, 10) === jornada.numero
-  );
+  if (partidosApi.length === 0) {
+    console.log(
+      `TheSportsDB no devolvió partidos para la Jornada ${jornada.numero}.`
+    );
+
+    return {
+      actualizados: 0,
+    };
+  }
 
   let actualizados = 0;
 
-  // 4. Compara cada partido guardado con lo que trae la API, por nombres de equipos
   const partidosActualizados = jornada.partidos.map((partidoLocal) => {
-    if (partidoLocal.resultado) return partidoLocal; // ya calificado, no tocar
+    // Si ya tiene resultado, no modificarlo
+    if (partidoLocal.resultado) {
+      return partidoLocal;
+    }
 
-    const partidoApi = partidosApi.find(
-      (p) =>
-        p.strHomeTeam.toLowerCase().includes(partidoLocal.equipo_local.toLowerCase()) ||
-        partidoLocal.equipo_local.toLowerCase().includes(p.strHomeTeam.toLowerCase())
-    );
+    // Buscar el partido correspondiente
+    const partidoApi = partidosApi.find((p) => {
+      const localApi = (p.strHomeTeam || "").toLowerCase();
+      const visitanteApi = (p.strAwayTeam || "").toLowerCase();
 
-    if (!partidoApi) return partidoLocal; // No se encontró match, se deja igual
+      const localFirestore = (
+        partidoLocal.equipo_local || ""
+      ).toLowerCase();
 
-    if (partidoApi.strStatus !== "FT") return partidoLocal; // Aún no termina, no tocar
+      const visitanteFirestore = (
+        partidoLocal.equipo_visitante || ""
+      ).toLowerCase();
+
+      const coincideLocal =
+        localApi.includes(localFirestore) ||
+        localFirestore.includes(localApi);
+
+      const coincideVisitante =
+        visitanteApi.includes(visitanteFirestore) ||
+        visitanteFirestore.includes(visitanteApi);
+
+      return coincideLocal && coincideVisitante;
+    });
+
+    if (!partidoApi) {
+      console.log(
+        `No se encontró en API: ${partidoLocal.equipo_local} vs ${partidoLocal.equipo_visitante}`
+      );
+
+      return partidoLocal;
+    }
+
+    // Si todavía no termina, no tocarlo
+    if (partidoApi.strStatus !== "FT") {
+      return partidoLocal;
+    }
 
     const golesLocal = parseInt(partidoApi.intHomeScore, 10);
     const golesVisitante = parseInt(partidoApi.intAwayScore, 10);
 
     let resultado = "empate";
-    if (golesLocal > golesVisitante) resultado = "local";
-    if (golesVisitante > golesLocal) resultado = "visitante";
+
+    if (golesLocal > golesVisitante) {
+      resultado = "local";
+    }
+
+    if (golesVisitante > golesLocal) {
+      resultado = "visitante";
+    }
 
     actualizados++;
+
+    console.log(
+      `Resultado actualizado: ${partidoLocal.equipo_local} vs ${partidoLocal.equipo_visitante} = ${resultado}`
+    );
+
     return {
       ...partidoLocal,
       resultado,
@@ -86,16 +177,26 @@ async function actualizarResultadosJornadaActiva() {
     };
   });
 
-  // 5. Guarda los partidos actualizados de vuelta en Firestore
-  await jornadaDoc.ref.update({ partidos: partidosActualizados });
+  await jornadaDoc.ref.update({
+    partidos: partidosActualizados,
+  });
 
-  console.log(`Jornada ${jornada.numero}: ${actualizados} partidos actualizados.`);
-  return { actualizados };
+  console.log(
+    `Jornada ${jornada.numero}: ${actualizados} partidos actualizados.`
+  );
+
+  return {
+    actualizados,
+  };
 }
 
-// ============================================================================
-// FUNCIÓN PROGRAMADA: corre automáticamente cada hora
-// ============================================================================
+/**
+ * ============================================================================
+ * FUNCIÓN PROGRAMADA
+ * ============================================================================
+ *
+ * Se ejecuta automáticamente cada hora.
+ */
 exports.actualizarResultadosProgramado = onSchedule(
   {
     schedule: "every 60 minutes",
@@ -107,107 +208,249 @@ exports.actualizarResultadosProgramado = onSchedule(
   }
 );
 
-// ============================================================================
-// FUNCIÓN MANUAL: para que el admin la dispare desde el panel cuando quiera
-// ============================================================================
+/**
+ * ============================================================================
+ * FUNCIÓN MANUAL
+ * ============================================================================
+ *
+ * Sirve para probar manualmente la actualización de resultados.
+ */
 exports.actualizarResultadosManual = onRequest(
-  { secrets: [SPORTSDB_API_KEY], cors: true },
+  {
+    secrets: [SPORTSDB_API_KEY],
+    cors: true,
+  },
   async (req, res) => {
     try {
       const resultado = await actualizarResultadosJornadaActiva();
-      res.status(200).json({ ok: true, ...resultado });
+
+      return res.status(200).json({
+        ok: true,
+        ...resultado,
+      });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ ok: false, error: error.message });
+      console.error("Error actualizando resultados:", error);
+
+      return res.status(500).json({
+        ok: false,
+        error: error.message,
+      });
     }
   }
 );
 
-// ============================================================================
-// CREAR JORNADA DESDE API: jala partidos de TheSportsDB y crea documento
-// ============================================================================
+/**
+ * ============================================================================
+ * CREAR JORNADA DESDE API
+ * ============================================================================
+ *
+ * Puede recibir:
+ *
+ * {
+ *   numeroJornada: 4,
+ *   activarInmediatamente: true
+ * }
+ *
+ * Si activarInmediatamente = true:
+ *
+ * estado = "en_curso"
+ *
+ * Si no:
+ *
+ * estado = "borrador"
+ */
 exports.crearJornadaDesdeAPI = onRequest(
-  { secrets: [SPORTSDB_API_KEY], cors: true },
+  {
+    secrets: [SPORTSDB_API_KEY],
+    cors: true,
+  },
   async (req, res) => {
     try {
-      // Obtener el token del header Authorization
+      /**
+       * ------------------------------------------------------------------------
+       * AUTENTICACIÓN
+       * ------------------------------------------------------------------------
+       */
+
       const authHeader = req.headers.authorization;
+
       if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        return res.status(401).json({ ok: false, error: "No autenticado" });
+        return res.status(401).json({
+          ok: false,
+          error: "No autenticado",
+        });
       }
 
       const token = authHeader.substring(7);
 
-      // Verificar el token con Firebase Admin SDK
       let decodedToken;
+
       try {
         decodedToken = await admin.auth().verifyIdToken(token);
-      } catch (err) {
-        return res.status(401).json({ ok: false, error: "Token inválido" });
+      } catch (error) {
+        console.error("Token inválido:", error);
+
+        return res.status(401).json({
+          ok: false,
+          error: "Token inválido",
+        });
       }
 
       const uid = decodedToken.uid;
 
-      // Protección: solo el admin puede crear jornadas
+      /**
+       * ------------------------------------------------------------------------
+       * SOLO ADMIN
+       * ------------------------------------------------------------------------
+       */
+
       if (uid !== ADMIN_UID) {
-        return res.status(403).json({ ok: false, error: "Solo el admin puede crear jornadas" });
+        return res.status(403).json({
+          ok: false,
+          error: "Solo el admin puede crear jornadas",
+        });
       }
 
-      const numeroJornada = req.body.numeroJornada;
+      /**
+       * ------------------------------------------------------------------------
+       * DATOS RECIBIDOS
+       * ------------------------------------------------------------------------
+       */
 
-      if (!numeroJornada || numeroJornada < 1 || numeroJornada > 17) {
-        return res.status(400).json({ ok: false, error: "Número de jornada debe estar entre 1 y 17" });
+      const numeroJornada = Number(req.body.numeroJornada);
+
+      const activarInmediatamente =
+        req.body.activarInmediatamente === true;
+
+      if (
+        !Number.isInteger(numeroJornada) ||
+        numeroJornada < 1 ||
+        numeroJornada > 17
+      ) {
+        return res.status(400).json({
+          ok: false,
+          error: "Número de jornada debe estar entre 1 y 17",
+        });
       }
 
-      // Verificar que la jornada no exista ya
-      const jornadadoc = await db.collection("jornadas").doc(`jornada_${numeroJornada}`).get();
-      if (jornadadoc.exists) {
-        return res.status(409).json({ ok: false, error: `La jornada ${numeroJornada} ya existe` });
-      }
-
-      // Traer partidos de TheSportsDB
-      const { data } = await axios.get(
-        "https://www.thesportsdb.com/api/v1/json/" + SPORTSDB_API_KEY.value() + "/eventsseason.php",
-        { params: { id: LIGA_MX_ID, s: TEMPORADA_ACTUAL } }
+      console.log(
+        `Solicitud para crear Jornada ${numeroJornada}.`
       );
 
-      const todosLosPartidos = data.events || [];
-      const partidosDeLaJornada = todosLosPartidos.filter(
-        (p) => parseInt(p.intRound, 10) === numeroJornada
-      );
+      /**
+       * ------------------------------------------------------------------------
+       * VERIFICAR SI YA EXISTE
+       * ------------------------------------------------------------------------
+       */
+
+      const jornadaRef = db
+        .collection("jornadas")
+        .doc(`jornada_${numeroJornada}`);
+
+      const jornadaDoc = await jornadaRef.get();
+
+      if (jornadaDoc.exists) {
+        return res.status(409).json({
+          ok: false,
+          error: `La jornada ${numeroJornada} ya existe`,
+        });
+      }
+
+      /**
+       * ------------------------------------------------------------------------
+       * OBTENER PARTIDOS DE LA JORNADA
+       * ------------------------------------------------------------------------
+       */
+
+      const partidosDeLaJornada =
+        await obtenerPartidosJornada(numeroJornada);
 
       if (partidosDeLaJornada.length === 0) {
-        return res.status(404).json({ ok: false, error: `No hay partidos para la jornada ${numeroJornada}` });
+        return res.status(404).json({
+          ok: false,
+          error:
+            `TheSportsDB no tiene partidos disponibles para la Jornada ${numeroJornada} ` +
+            `de la temporada ${TEMPORADA_ACTUAL}.`,
+        });
       }
 
-      // Transformar partidos al formato de Firestore
-      const partidos = partidosDeLaJornada.map((p, i) => ({
-        id: i + 1,
-        equipo_local: p.strHomeTeam,
-        equipo_visitante: p.strAwayTeam,
-        fecha: p.dateEvent,
-        hora: p.strTimeLocal,
+      /**
+       * ------------------------------------------------------------------------
+       * TRANSFORMAR PARTIDOS
+       * ------------------------------------------------------------------------
+       */
+
+      const partidos = partidosDeLaJornada.map((p, index) => ({
+        id: index + 1,
+
+        equipo_local: p.strHomeTeam || "",
+
+        equipo_visitante: p.strAwayTeam || "",
+
+        fecha: p.dateEvent || null,
+
+        hora: p.strTimeLocal || p.strTime || null,
+
         resultado: null,
+
         estado: "programado",
       }));
 
-      // Guardar jornada en Firestore
-      await db.collection("jornadas").doc(`jornada_${numeroJornada}`).set({
+      /**
+       * ------------------------------------------------------------------------
+       * GUARDAR JORNADA
+       * ------------------------------------------------------------------------
+       */
+
+      const estadoInicial = activarInmediatamente
+        ? "en_curso"
+        : "borrador";
+
+      await jornadaRef.set({
         numero: numeroJornada,
-        estado: "borrador",
-        partidos: partidos,
+
+        estado: estadoInicial,
+
+        partidos,
+
         creadaEn: new Date().toISOString(),
       });
 
+      console.log(
+        `Jornada ${numeroJornada} creada correctamente con ${partidos.length} partidos.`
+      );
+
+      /**
+       * ------------------------------------------------------------------------
+       * RESPUESTA
+       * ------------------------------------------------------------------------
+       */
+
       return res.status(200).json({
         ok: true,
+
         numeroJornada,
+
         partidos: partidos.length,
-        mensaje: `Jornada ${numeroJornada} creada con ${partidos.length} partidos`,
+
+        estado: estadoInicial,
+
+        mensaje: activarInmediatamente
+          ? `Jornada ${numeroJornada} creada y publicada con ${partidos.length} partidos`
+          : `Jornada ${numeroJornada} creada con ${partidos.length} partidos`,
       });
     } catch (error) {
-      console.error("Error en crearJornadaDesdeAPI:", error);
-      return res.status(500).json({ ok: false, error: error.message || "Error desconocido" });
+      console.error(
+        "Error en crearJornadaDesdeAPI:",
+        error
+      );
+
+      return res.status(500).json({
+        ok: false,
+        error:
+          error.message ||
+          "Error desconocido",
+      });
     }
   }
 );

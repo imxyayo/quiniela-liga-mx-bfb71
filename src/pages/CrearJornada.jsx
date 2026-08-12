@@ -5,8 +5,12 @@ import "./CrearJornada.css";
 
 const auth = getAuth(app);
 
+const FUNCTION_URL =
+  "https://crearjornadadesdeapi-faiy4zqaaq-uc.a.run.app";
+
 export default function CrearJornada() {
   const [numeroJornada, setNumeroJornada] = useState("");
+  const [activarInmediatamente, setActivarInmediatamente] = useState(false);
   const [cargando, setCargando] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState(""); // "error" o "exito"
@@ -29,34 +33,39 @@ export default function CrearJornada() {
       if (!currentUser) {
         throw new Error("No estás autenticado");
       }
-      const token = await currentUser.getIdToken();
+      const token = await currentUser.getIdToken(true);
 
       // Llamar la Cloud Function vía fetch
-      const response = await fetch(
-        "https://us-central1-quiniela-liga-mx-90c95.cloudfunctions.net/crearJornadaDesdeAPI",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            numeroJornada: parseInt(numeroJornada),
-          }),
-        }
-      );
+      const response = await fetch(FUNCTION_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          numeroJornada: parseInt(numeroJornada),
+          activarInmediatamente: activarInmediatamente === true,
+        }),
+      });
 
-      const data = await response.json();
+      let data = {};
+      try {
+        data = await response.json();
+      } catch {
+        data = {};
+      }
 
       if (!response.ok) {
         throw new Error(data.error || "Error desconocido");
       }
 
       setMensaje(
-        `Jornada ${numeroJornada} creada con ${data.partidos} partidos.`
+        data.mensaje ||
+          `Jornada ${numeroJornada} creada con ${data.partidos} partidos.`
       );
       setTipoMensaje("exito");
       setNumeroJornada(""); // Limpiar input
+      setActivarInmediatamente(false);
     } catch (error) {
       console.error("Error creando jornada:", error);
 
@@ -65,7 +74,7 @@ export default function CrearJornada() {
         setMensaje("No estás autenticado.");
       } else if (error.message.includes("ya existe")) {
         setMensaje(`La jornada ${numeroJornada} ya existe.`);
-      } else if (error.message.includes("No hay partidos")) {
+      } else if (error.message.includes("No hay partidos") || error.message.toLowerCase().includes("no tiene partidos")) {
         setMensaje(`No hay partidos para la jornada ${numeroJornada}.`);
       } else {
         setMensaje(`Error: ${error.message}`);
@@ -95,6 +104,23 @@ export default function CrearJornada() {
             className="crj-input"
           />
         </div>
+
+        <label className="crj-checkbox">
+          <input
+            type="checkbox"
+            checked={activarInmediatamente}
+            onChange={(e) => setActivarInmediatamente(e.target.checked)}
+            disabled={cargando}
+          />
+          <span>Publicar inmediatamente</span>
+        </label>
+
+        {activarInmediatamente && (
+          <p className="crj-aviso">
+            Esta jornada quedará disponible de inmediato para los usuarios.
+          </p>
+        )}
+
         <button type="submit" disabled={cargando} className="crj-btn-crear">
           {cargando ? "Creando…" : "Crear jornada"}
         </button>

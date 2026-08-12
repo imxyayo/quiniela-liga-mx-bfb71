@@ -1,47 +1,321 @@
-.admin-container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
+:root {
+  --dash-bg: #0a0a0b;
+  --dash-surface: #151518;
+  --dash-surface-alt: #1c1c20;
+  --dash-border: #2a2a2f;
+  --dash-gold: #c9a961;
+  --dash-gold-soft: rgba(201, 169, 97, 0.14);
+  --dash-white: #f2f1ec;
+  --dash-muted: #8b8b91;
+  --dash-acierto: #7fae86;
+  --dash-acierto-soft: rgba(127, 174, 134, 0.12);
+  --dash-fallo: #b06868;
+  --dash-fallo-soft: rgba(176, 104, 104, 0.12);
 }
 
-.admin-header {
-  text-align: center;
-  margin-bottom: 40px;
-  border-bottom: 2px solid #f4c430;
-  padding-bottom: 20px;
-}
 
-.admin-header h1 {
-  font-family: "Oswald", sans-serif;
-  font-size: 2.5rem;
-  color: #1a1a1a;
-  margin: 0;
-}
+/* =========================================================
+   PÁGINA PRINCIPAL
+   ========================================================= */
 
-.admin-header p {
+.ap-page {
+  min-height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--dash-bg);
+  color: var(--dash-white);
+  padding: 50px 24px 80px;
   font-family: "Inter", sans-serif;
-  color: #666;
-  margin-top: 8px;
-  font-size: 0.95rem;
 }
 
-.admin-content {
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.ap-header {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto 55px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--dash-border);
+}
+
+.ap-eyebrow {
+  display: block;
+  margin-bottom: 10px;
+  font-family: "Oswald", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dash-gold);
+}
+
+.ap-header h1 {
+  margin: 0;
+  font-family: "Oswald", sans-serif;
+  font-size: clamp(32px, 5vw, 48px);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--dash-white);
+}
+
+
+/* =========================================================
+   CONTENIDO
+   ========================================================= */
+
+.ap-content {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+
+/* =========================================================
+   PASOS
+   ========================================================= */
+
+.ap-step {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  column-gap: 24px;
+  position: relative;
+}
+
+.ap-step-marker {
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  align-items: center;
+  position: relative;
 }
 
-.admin-section {
-  background: #f9f9f9;
-  padding: 20px;
-  border-radius: 8px;
-  border-left: 4px solid #f4c430;
-}
+.ap-step-number {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-.admin-section h2 {
+  border: 1px solid var(--dash-gold);
+  border-radius: 50%;
+
+  background: var(--dash-gold-soft);
+  color: var(--dash-gold);
+
   font-family: "Oswald", sans-serif;
-  font-size: 1.5rem;
-  color: #1a1a1a;
-  margin-top: 0;
-  margin-bottom: 20px;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+
+  flex-shrink: 0;
+}
+
+.ap-step-line {
+  width: 1px;
+  flex: 1;
+  min-height: 70px;
+  margin-top: 12px;
+  background: var(--dash-border);
+}
+
+
+/* =========================================================
+   CUERPO DEL PASO
+   ========================================================= */
+
+.ap-step-body {
+  min-width: 0;
+  padding-bottom: 60px;
+}
+
+.ap-step:last-child .ap-step-body {
+  padding-bottom: 0;
+}
+
+.ap-step-eyebrow {
+  display: block;
+  margin-bottom: 8px;
+
+  font-family: "Oswald", sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+
+  color: var(--dash-muted);
+}
+
+.ap-step-body h2 {
+  margin: 0 0 8px;
+
+  font-family: "Oswald", sans-serif;
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 1.1;
+
+  color: var(--dash-white);
+}
+
+.ap-step-desc {
+  max-width: 620px;
+  margin: 0 0 28px;
+
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  line-height: 1.7;
+
+  color: var(--dash-muted);
+}
+
+
+/* =========================================================
+   CONTENIDO DE CREAR / CERRAR JORNADA
+   ========================================================= */
+
+.ap-step-body > div {
+  width: 100%;
+}
+
+
+/* =========================================================
+   ACCESO DENEGADO
+   ========================================================= */
+
+.ap-denegado-page {
+  min-height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 30px;
+
+  background: var(--dash-bg);
+  color: var(--dash-white);
+
+  font-family: "Inter", sans-serif;
+}
+
+.ap-denegado-card {
+  width: 100%;
+  max-width: 480px;
+  box-sizing: border-box;
+
+  padding: 40px;
+
+  background: var(--dash-surface);
+  border: 1px solid var(--dash-border);
+  border-radius: 12px;
+
+  text-align: center;
+
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+.ap-denegado-eyebrow {
+  display: block;
+  margin-bottom: 14px;
+
+  font-family: "Oswald", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+
+  color: var(--dash-gold);
+}
+
+.ap-denegado-card p {
+  margin: 0;
+
+  font-size: 14px;
+  line-height: 1.6;
+
+  color: var(--dash-muted);
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 700px) {
+  .ap-page {
+    padding: 35px 18px 60px;
+  }
+
+  .ap-header {
+    margin-bottom: 40px;
+    padding-bottom: 22px;
+  }
+
+  .ap-header h1 {
+    font-size: 36px;
+  }
+
+  .ap-step {
+    grid-template-columns: 48px minmax(0, 1fr);
+    column-gap: 16px;
+  }
+
+  .ap-step-number {
+    width: 40px;
+    height: 40px;
+    font-size: 14px;
+  }
+
+  .ap-step-body {
+    padding-bottom: 45px;
+  }
+
+  .ap-step-body h2 {
+    font-size: 26px;
+  }
+
+  .ap-step-desc {
+    margin-bottom: 22px;
+  }
+
+  .ap-denegado-page {
+    padding: 20px;
+  }
+
+  .ap-denegado-card {
+    padding: 30px 22px;
+  }
+}
+
+
+@media (max-width: 430px) {
+  .ap-page {
+    padding: 28px 14px 50px;
+  }
+
+  .ap-header h1 {
+    font-size: 31px;
+  }
+
+  .ap-step {
+    grid-template-columns: 40px minmax(0, 1fr);
+    column-gap: 12px;
+  }
+
+  .ap-step-number {
+    width: 34px;
+    height: 34px;
+    font-size: 12px;
+  }
+
+  .ap-step-body h2 {
+    font-size: 23px;
+  }
+
+  .ap-step-desc {
+    font-size: 13px;
+  }
 }
