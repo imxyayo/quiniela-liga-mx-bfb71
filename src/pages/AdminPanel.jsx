@@ -1,7 +1,7 @@
 import React from "react";
 import { useAuth } from "../hooks/useAuth";
 import CrearJornada from "./CrearJornada";
-import "./AdminPanel.css";
+
 
 // UID del admin (Panfilo P)
 const ADMIN_UID = "CNTWR8yNC0SIaRtELk8aW9eldvC2";
