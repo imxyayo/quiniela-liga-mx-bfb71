@@ -12,8 +12,12 @@ import { db, auth } from "../services/firebase";
 import "./CerrarJornada.css";
 
 // Cuota que paga cada persona por jornada. El premio total no es fijo:
-// se calcula como CUOTA_POR_PERSONA * cuántos mandaron predicción esa semana.
+// se calcula como (CUOTA_POR_PERSONA - COMISION_ADMIN) * cuántos mandaron
+// predicción esa semana. La comisión se queda con el admin, el resto
+// se reparte entre los ganadores.
 const CUOTA_POR_PERSONA = 100;
+const COMISION_ADMIN = 10;
+const APORTE_AL_BOTE = CUOTA_POR_PERSONA - COMISION_ADMIN;
 const ULTIMA_JORNADA_TEMPORADA = 17;
 
 const FUNCTION_URL =
@@ -127,10 +131,11 @@ export default function CerrarJornada() {
         if (aciertos > mejorAciertos) mejorAciertos = aciertos;
       });
 
-      // Premio dinámico: cuota * cuántos mandaron predicción esta jornada
-      // (no depende de los 30 registrados, solo de quien sí participó).
+      // Premio dinámico: (cuota - comisión del admin) * cuántos mandaron
+      // predicción esta jornada (no depende de los 30 registrados, solo
+      // de quien sí participó).
       const numParticipantes = filas.length;
-      const premioTotal = CUOTA_POR_PERSONA * numParticipantes;
+      const premioTotal = APORTE_AL_BOTE * numParticipantes;
 
       const ganadores = filas.filter((f) => f.aciertos === mejorAciertos);
       const premioIndividual =
@@ -160,6 +165,7 @@ export default function CerrarJornada() {
         premioTotal,
         numParticipantes,
         cuotaPorPersona: CUOTA_POR_PERSONA,
+        comisionAdmin: COMISION_ADMIN,
       });
 
       try {

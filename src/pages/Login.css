@@ -2,15 +2,28 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
 
+:root {
+  --dash-bg: #0a0a0b;
+  --dash-surface: #151518;
+  --dash-surface-alt: #1c1c20;
+  --dash-border: #2a2a2f;
+  --dash-gold: #c9a961;
+  --dash-gold-soft: rgba(201, 169, 97, 0.14);
+  --dash-white: #f2f1ec;
+  --dash-muted: #8b8b91;
+  --dash-fallo: #b06868;
+  --dash-fallo-soft: rgba(176, 104, 104, 0.12);
+}
+
 .login-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   background:
-    radial-gradient(circle at 20% 10%, rgba(212, 175, 55, 0.10) 0%, transparent 45%),
-    radial-gradient(circle at 80% 90%, rgba(26, 122, 76, 0.18) 0%, transparent 50%),
-    #0a1f16;
+    radial-gradient(circle at 20% 10%, rgba(201, 169, 97, 0.10) 0%, transparent 45%),
+    radial-gradient(circle at 80% 90%, rgba(201, 169, 97, 0.08) 0%, transparent 50%),
+    var(--dash-bg);
   padding: 24px;
   box-sizing: border-box;
   font-family: 'Inter', system-ui, sans-serif;
@@ -22,16 +35,17 @@
   position: relative;
   width: 100%;
   max-width: 380px;
-  background: #f7f4ea;
+  background: var(--dash-surface);
+  border: 1px solid var(--dash-border);
   border-radius: 4px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
   overflow: visible;
 }
 
 .ticket-top {
   padding: 32px 32px 24px;
   text-align: center;
-  border-bottom: 2px dashed #c9c0a3;
+  border-bottom: 2px dashed var(--dash-border);
   position: relative;
 }
 
@@ -44,7 +58,7 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: #0a1f16;
+  background: var(--dash-bg);
 }
 .ticket-top::before { left: -12px; }
 .ticket-top::after { right: -12px; }
@@ -70,7 +84,7 @@
   font-weight: 600;
   letter-spacing: 3px;
   text-transform: uppercase;
-  color: #9a8f5e;
+  color: var(--dash-gold);
   margin: 0 0 6px 0;
 }
 
@@ -79,19 +93,19 @@
   font-size: 28px;
   font-weight: 700;
   letter-spacing: 0.5px;
-  color: #14251b;
+  color: var(--dash-white);
   margin: 0;
   line-height: 1.15;
   text-transform: uppercase;
 }
 
 .ticket-title span {
-  color: #1a7a4c;
+  color: var(--dash-gold);
 }
 
 .ticket-subtitle {
   font-size: 13.5px;
-  color: #6b6450;
+  color: var(--dash-muted);
   margin: 10px 0 0 0;
 }
 
@@ -104,7 +118,7 @@
   font-weight: 600;
   letter-spacing: 0.3px;
   text-transform: uppercase;
-  color: #6b6450;
+  color: var(--dash-muted);
   margin-bottom: 8px;
 }
 
@@ -114,20 +128,20 @@
   font-size: 16px;
   font-family: 'Inter', sans-serif;
   border: none;
-  border-bottom: 2px solid #d8d0b8;
-  background: transparent;
+  border-bottom: 2px solid var(--dash-border);
+  background: var(--dash-surface-alt);
   box-sizing: border-box;
   outline: none;
-  color: #14251b;
+  color: var(--dash-white);
   transition: border-color 0.15s ease;
 }
 
 .login-input:focus {
-  border-bottom-color: #1a7a4c;
+  border-bottom-color: var(--dash-gold);
 }
 
 .login-input::placeholder {
-  color: #a89e7f;
+  color: var(--dash-muted);
 }
 
 .login-button {
@@ -139,8 +153,8 @@
   font-weight: 600;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  color: #f7f4ea;
-  background: #14251b;
+  color: var(--dash-bg);
+  background: var(--dash-gold);
   border: none;
   border-radius: 2px;
   cursor: pointer;
@@ -148,7 +162,7 @@
 }
 
 .login-button:hover:not(:disabled) {
-  background: #1a7a4c;
+  background: #ddc07f;
 }
 
 .login-button:active:not(:disabled) {
@@ -163,9 +177,9 @@
 .login-error {
   margin-top: 16px;
   padding: 10px 14px;
-  background: #fbeaea;
-  border-left: 3px solid #b3261e;
-  color: #8f1f19;
+  background: var(--dash-fallo-soft);
+  border-left: 3px solid var(--dash-fallo);
+  color: var(--dash-fallo);
   font-size: 13px;
 }
 
@@ -176,5 +190,5 @@
   font-size: 10.5px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  color: #a89e7f;
+  color: var(--dash-muted);
 }

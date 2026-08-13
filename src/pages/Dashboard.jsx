@@ -10,6 +10,11 @@ import { db } from "../services/firebase";
 import { useAuth } from "../hooks/useAuth";
 import "./Dashboard.css";
 
+// Deben coincidir con los mismos valores en GestionPagos.jsx y CerrarJornada.jsx.
+const CUOTA_POR_PERSONA = 100;
+const COMISION_ADMIN = 10;
+const APORTE_AL_BOTE = CUOTA_POR_PERSONA - COMISION_ADMIN;
+
 const RESULTADO_LABEL = {
   local: "Local",
   empate: "Empate",
@@ -165,6 +170,13 @@ export default function Dashboard() {
   const posicion = posicionIndex >= 0 ? posicionIndex + 1 : null;
   const total = ranking.length;
 
+  // Bote en vivo: cuántos ya confirmó el admin como pagados, y cuánto
+  // suma eso ya descontada la comisión. No se muestra la comisión en sí,
+  // solo lo que efectivamente va al premio.
+  const pagos = jornada.pagos || {};
+  const numPagados = Object.values(pagos).filter(Boolean).length;
+  const premioActual = numPagados * APORTE_AL_BOTE;
+
   return (
     <div className="dashboard-page">
     <div className="dashboard">
@@ -172,6 +184,16 @@ export default function Dashboard() {
         <span className="dash-eyebrow">Jornada {jornada.numero}</span>
         <h1>Hola, {perfil?.nombre || "amigo"}</h1>
       </header>
+
+      <section className="dash-premio">
+        <span className="dash-premio-label">Premio de esta jornada</span>
+        <span className="dash-premio-monto">
+          ${premioActual.toLocaleString("es-MX")}
+        </span>
+        <span className="dash-premio-detalle">
+          {numPagados} {numPagados === 1 ? "participante confirmado" : "participantes confirmados"}
+        </span>
+      </section>
 
       <div className="dash-stats">
         <div className="stat stat--acierto">

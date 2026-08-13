@@ -62,17 +62,17 @@ export default function Login() {
     <div className="login-page">
       <div className="ticket">
         <div className="ticket-top">
-          {/* Escudo tipo equipo de fútbol, hecho en SVG */}
+          {/* Escudo tipo equipo de fútbol, hecho en SVG - paleta dark/gold */}
           <svg className="crest" viewBox="0 0 64 72" xmlns="http://www.w3.org/2000/svg">
             <path
               d="M32 2 L60 12 V34 C60 52 48 64 32 70 C16 64 4 52 4 34 V12 Z"
-              fill="#14251b"
-              stroke="#d4af37"
+              fill="#151518"
+              stroke="#c9a961"
               strokeWidth="2"
             />
             <path
               d="M32 8 L54 16 V34 C54 48 44 58 32 63 C20 58 10 48 10 34 V16 Z"
-              fill="#1a7a4c"
+              fill="#1c1c20"
             />
             <text
               x="32"
@@ -81,7 +81,7 @@ export default function Login() {
               fontFamily="Oswald, sans-serif"
               fontWeight="700"
               fontSize="24"
-              fill="#f7f4ea"
+              fill="#c9a961"
             >
               QA
             </text>
