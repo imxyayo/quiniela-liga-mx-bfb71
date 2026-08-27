@@ -2,7 +2,6 @@
 import { useState, useRef } from "react";
 import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 import { auth } from "../services/firebase";
-import "./Login.css";
 
 export default function Login() {
   const [telefono, setTelefono] = useState("");
@@ -59,61 +58,63 @@ export default function Login() {
   };
 
   return (
-    <div className="login-page">
-      <div className="ticket">
-        <div className="ticket-top">
-          {/* Escudo tipo equipo de fútbol, hecho en SVG - paleta dark/gold */}
-          <svg className="crest" viewBox="0 0 64 72" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M32 2 L60 12 V34 C60 52 48 64 32 70 C16 64 4 52 4 34 V12 Z"
-              fill="#151518"
-              stroke="#c9a961"
-              strokeWidth="2"
-            />
-            <path
-              d="M32 8 L54 16 V34 C54 48 44 58 32 63 C20 58 10 48 10 34 V16 Z"
-              fill="#1c1c20"
-            />
-            <text
-              x="32"
-              y="42"
-              textAnchor="middle"
-              fontFamily="Oswald, sans-serif"
-              fontWeight="700"
-              fontSize="24"
-              fill="#c9a961"
-            >
-              QA
-            </text>
-          </svg>
+    <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-[var(--dash-bg)] p-6 font-['Inter',sans-serif]">
+      {/* Glow ambiental de fondo */}
+      <div className="pointer-events-none absolute inset-0 z-0">
+        <div className="absolute left-1/2 top-1/2 h-[700px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--dash-gold)]/5 blur-[120px]" />
+      </div>
 
-          <p className="ticket-eyebrow">Boleto oficial</p>
-          <h1 className="ticket-title">
-            Quinielas <span>Angamacutiro</span>
+      {/* Boleto */}
+      <div className="relative z-10 w-full max-w-[400px] overflow-visible rounded border border-[var(--dash-border)] bg-[var(--dash-surface)] shadow-2xl">
+        {/* Parte de arriba: marca */}
+        <div className="relative border-b-2 border-dashed border-[var(--dash-border)] px-8 pb-6 pt-8 text-center">
+          {/* Muescas del boleto */}
+          <span className="absolute -bottom-3 -left-3 h-6 w-6 rounded-full bg-[var(--dash-bg)]" />
+          <span className="absolute -bottom-3 -right-3 h-6 w-6 rounded-full bg-[var(--dash-bg)]" />
+
+          <img
+            src="/logo.png"
+            alt="Quinielas Angamacutiro"
+            className="mx-auto mb-4 h-20 w-auto object-contain drop-shadow-[0_0_15px_rgba(201,169,97,0.25)]"
+          />
+
+          <p className="mb-1.5 font-mono text-[11px] font-semibold uppercase tracking-[3px] text-[var(--dash-gold)]">
+            Boleto oficial
+          </p>
+          <h1 className="text-3xl font-extrabold uppercase leading-tight tracking-wide text-[var(--dash-white)]">
+            Quinielas <span className="text-[var(--dash-gold)]">Angamacutiro</span>
           </h1>
-          <p className="ticket-subtitle">
+          <p className="mt-2.5 text-[13.5px] text-[var(--dash-muted)]">
             {paso === "telefono"
               ? "Ingresa con tu número de celular"
               : "Verifica tu código de acceso"}
           </p>
         </div>
 
-        <div className="ticket-bottom">
+        {/* Parte de abajo: formulario */}
+        <div className="px-8 pb-8 pt-7">
           {paso === "telefono" && (
             <form onSubmit={enviarCodigo}>
-              <label className="login-label" htmlFor="telefono">
+              <label
+                htmlFor="telefono"
+                className="mb-2 block text-left font-mono text-xs font-semibold uppercase tracking-wider text-[var(--dash-muted)]"
+              >
                 Número de celular
               </label>
               <input
                 id="telefono"
-                className="login-input"
                 type="tel"
                 placeholder="Ej. 4431234567"
                 value={telefono}
                 onChange={(e) => setTelefono(e.target.value)}
                 required
+                className="w-full rounded-t border-0 border-b-2 border-[var(--dash-border)] bg-[var(--dash-surface-alt)] px-4 py-3.5 text-base text-[var(--dash-white)] outline-none transition focus:border-[var(--dash-gold)]"
               />
-              <button className="login-button" type="submit" disabled={cargando}>
+              <button
+                type="submit"
+                disabled={cargando}
+                className="mt-6 w-full rounded bg-[var(--dash-gold)] py-4 font-mono text-sm font-bold uppercase tracking-[1.5px] text-[var(--dash-bg)] shadow-[0_4px_20px_rgba(201,169,97,0.15)] transition hover:brightness-110 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
+              >
                 {cargando ? "Enviando..." : "Enviar código"}
               </button>
             </form>
@@ -121,28 +122,41 @@ export default function Login() {
 
           {paso === "codigo" && (
             <form onSubmit={verificarCodigo}>
-              <label className="login-label" htmlFor="codigo">
+              <label
+                htmlFor="codigo"
+                className="mb-2 block text-left font-mono text-xs font-semibold uppercase tracking-wider text-[var(--dash-muted)]"
+              >
                 Código de verificación
               </label>
               <input
                 id="codigo"
-                className="login-input"
                 type="text"
                 inputMode="numeric"
                 placeholder="123456"
                 value={codigo}
                 onChange={(e) => setCodigo(e.target.value)}
                 required
+                className="w-full rounded-t border-0 border-b-2 border-[var(--dash-border)] bg-[var(--dash-surface-alt)] px-4 py-3.5 text-base text-[var(--dash-white)] outline-none transition focus:border-[var(--dash-gold)]"
               />
-              <button className="login-button" type="submit" disabled={cargando}>
+              <button
+                type="submit"
+                disabled={cargando}
+                className="mt-6 w-full rounded bg-[var(--dash-gold)] py-4 font-mono text-sm font-bold uppercase tracking-[1.5px] text-[var(--dash-bg)] shadow-[0_4px_20px_rgba(201,169,97,0.15)] transition hover:brightness-110 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
+              >
                 {cargando ? "Verificando..." : "Verificar código"}
               </button>
             </form>
           )}
 
-          {error && <div className="login-error">{error}</div>}
+          {error && (
+            <div className="mt-4 flex items-start gap-2 border-l-2 border-[var(--dash-fallo)] bg-[var(--dash-fallo-soft)] p-3 text-sm text-[var(--dash-fallo)]">
+              <span>{error}</span>
+            </div>
+          )}
 
-          <p className="ticket-footer">Acceso exclusivo · Grupo autorizado</p>
+          <p className="mt-5 text-center font-mono text-[10.5px] uppercase tracking-[1.5px] text-[var(--dash-muted)]">
+            Acceso exclusivo · Grupo autorizado
+          </p>
         </div>
       </div>
 

@@ -8,7 +8,6 @@ import {
 } from "firebase/firestore";
 import { db } from "../services/firebase";
 import { useAuth } from "../hooks/useAuth";
-import "./Dashboard.css";
 
 // Deben coincidir con los mismos valores en GestionPagos.jsx y CerrarJornada.jsx.
 const CUOTA_POR_PERSONA = 100;
@@ -20,6 +19,16 @@ const RESULTADO_LABEL = {
   empate: "Empate",
   visitante: "Visitante",
 };
+
+function iniciales(nombre) {
+  return (nombre || "?")
+    .trim()
+    .split(/\s+/)
+    .map((palabra) => palabra[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
 
 // Iconos SVG minimos, sin librerias externas
 function IconCheck() {
@@ -147,16 +156,16 @@ export default function Dashboard() {
 
   if (cargando) {
     return (
-      <div className="dashboard-page">
-        <div className="dash-estado">Cargando tu jornada…</div>
+      <div className="flex min-h-screen w-full items-center justify-center bg-[var(--dash-bg)] font-['Inter',sans-serif] text-[var(--dash-muted)]">
+        Cargando tu jornada…
       </div>
     );
   }
 
   if (!jornada) {
     return (
-      <div className="dashboard-page">
-        <div className="dash-estado">No hay una jornada activa por ahora.</div>
+      <div className="flex min-h-screen w-full items-center justify-center bg-[var(--dash-bg)] font-['Inter',sans-serif] text-[var(--dash-muted)]">
+        No hay una jornada activa por ahora.
       </div>
     );
   }
@@ -178,112 +187,159 @@ export default function Dashboard() {
   const premioActual = numPagados * APORTE_AL_BOTE;
 
   return (
-    <div className="dashboard-page">
-    <div className="dashboard">
-      <header className="dash-header">
-        <span className="dash-eyebrow">Jornada {jornada.numero}</span>
-        <h1>Hola, {perfil?.nombre || "amigo"}</h1>
-      </header>
-
-      <section className="dash-premio">
-        <span className="dash-premio-label">Premio de esta jornada</span>
-        <span className="dash-premio-monto">
-          ${premioActual.toLocaleString("es-MX")}
-        </span>
-        <span className="dash-premio-detalle">
-          {numPagados} {numPagados === 1 ? "participante confirmado" : "participantes confirmados"}
-        </span>
-      </section>
-
-      <div className="dash-stats">
-        <div className="stat stat--acierto">
-          <span className="stat-valor">{aciertos}</span>
-          <span className="stat-label">Aciertos</span>
-        </div>
-        <div className="stat stat--fallo">
-          <span className="stat-valor">{fallos}</span>
-          <span className="stat-label">Fallos</span>
-        </div>
-        <div className="stat stat--pendiente">
-          <span className="stat-valor">{pendientes}</span>
-          <span className="stat-label">Por jugar</span>
-        </div>
-        <div className="stat stat--posicion">
-          <div className="posicion-badge">
-            <span className="posicion-numero">{posicion ?? "—"}</span>
-            <span className="posicion-total">de {total}</span>
+    <div className="min-h-screen w-full bg-[var(--dash-bg)]">
+      <div className="mx-auto max-w-5xl px-4 pb-24 pt-6 font-['Inter',sans-serif] text-[var(--dash-white)]">
+        {/* Header */}
+        <header className="mb-6 flex items-center gap-4">
+          <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border border-[var(--dash-gold)] bg-[var(--dash-gold-soft)] font-mono text-base font-bold text-[var(--dash-gold)]">
+            {iniciales(perfil?.nombre)}
+          </span>
+          <div>
+            <span className="mb-1 block font-mono text-xs uppercase tracking-widest text-[var(--dash-gold)]">
+              Jornada {jornada.numero}
+            </span>
+            <h1 className="text-2xl font-extrabold tracking-tight">
+              Hola, {perfil?.nombre || "amigo"}
+            </h1>
           </div>
-          <span className="stat-label">Tu posición</span>
+        </header>
+
+        {/* Premio / bote en vivo */}
+        <section className="mb-8 overflow-hidden rounded-xl border border-[var(--dash-gold)]/40 bg-gradient-to-br from-[var(--dash-gold-soft)] via-[var(--dash-surface)]/60 to-[var(--dash-surface)]/60 p-6 backdrop-blur-md">
+          <span className="block font-mono text-[11px] uppercase tracking-widest text-[var(--dash-muted)]">
+            Premio de esta jornada
+          </span>
+          <span className="mt-1 block text-4xl font-extrabold tracking-tight text-[var(--dash-gold)]">
+            ${premioActual.toLocaleString("es-MX")}
+          </span>
+          <span className="mt-1 block text-xs text-[var(--dash-muted)]">
+            {numPagados}{" "}
+            {numPagados === 1 ? "participante confirmado" : "participantes confirmados"}
+          </span>
+        </section>
+
+        {/* Stats */}
+        <div className="mb-10 grid grid-cols-2 gap-3 md:grid-cols-4">
+          <div className="rounded-xl border border-[var(--dash-border)] bg-[var(--dash-surface)]/60 p-4 text-center backdrop-blur-md">
+            <span className="block text-3xl font-extrabold text-[var(--dash-acierto)]">
+              {aciertos}
+            </span>
+            <span className="mt-1 block font-mono text-[11px] uppercase tracking-wider text-[var(--dash-muted)]">
+              Aciertos
+            </span>
+          </div>
+          <div className="rounded-xl border border-[var(--dash-border)] bg-[var(--dash-surface)]/60 p-4 text-center backdrop-blur-md">
+            <span className="block text-3xl font-extrabold text-[var(--dash-fallo)]">
+              {fallos}
+            </span>
+            <span className="mt-1 block font-mono text-[11px] uppercase tracking-wider text-[var(--dash-muted)]">
+              Fallos
+            </span>
+          </div>
+          <div className="rounded-xl border border-[var(--dash-border)] bg-[var(--dash-surface)]/60 p-4 text-center backdrop-blur-md">
+            <span className="block text-3xl font-extrabold text-[var(--dash-muted)]">
+              {pendientes}
+            </span>
+            <span className="mt-1 block font-mono text-[11px] uppercase tracking-wider text-[var(--dash-muted)]">
+              Por jugar
+            </span>
+          </div>
+          <div className="rounded-xl border border-[var(--dash-gold)]/40 bg-[var(--dash-surface)]/60 p-4 text-center backdrop-blur-md">
+            <div className="mx-auto mb-1 flex h-11 w-11 flex-col items-center justify-center rounded-full border border-[var(--dash-gold)]">
+              <span className="text-base font-bold leading-none text-[var(--dash-gold)]">
+                {posicion ?? "—"}
+              </span>
+              <span className="text-[8px] leading-none text-[var(--dash-muted)]">
+                de {total}
+              </span>
+            </div>
+            <span className="mt-1 block font-mono text-[11px] uppercase tracking-wider text-[var(--dash-muted)]">
+              Tu posición
+            </span>
+          </div>
         </div>
+
+        {/* Fixture */}
+        <section>
+          <h2 className="mb-4 font-mono text-xs uppercase tracking-widest text-[var(--dash-muted)]">
+            Tus predicciones
+          </h2>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            {jornada.partidos.map((partido) => {
+              const prediccion = predicciones.find(
+                (p) => p.id_partido === partido.id
+              );
+              const finalizado =
+                partido.estado === "finalizado" && partido.resultado;
+              const acerto =
+                finalizado && prediccion?.prediccion === partido.resultado;
+              const fallo =
+                finalizado &&
+                (!prediccion || prediccion.prediccion !== partido.resultado);
+
+              let estado = "pendiente";
+              if (acerto) estado = "acierto";
+              else if (fallo) estado = "fallo";
+
+              const chip = {
+                acierto: {
+                  wrap: "border-[var(--dash-acierto)]/40 bg-[var(--dash-acierto-soft)] text-[var(--dash-acierto)]",
+                  icon: <IconCheck />,
+                  texto: "Acierto",
+                },
+                fallo: {
+                  wrap: "border-[var(--dash-fallo)]/40 bg-[var(--dash-fallo-soft)] text-[var(--dash-fallo)]",
+                  icon: <IconCross />,
+                  texto: "Fallo",
+                },
+                pendiente: {
+                  wrap: "border-[var(--dash-border)] bg-[var(--dash-surface-alt)] text-[var(--dash-muted)]",
+                  icon: <IconDot />,
+                  texto: "Por jugar",
+                },
+              }[estado];
+
+              return (
+                <article
+                  key={partido.id}
+                  className="relative flex flex-col overflow-hidden rounded-xl border border-[var(--dash-border)] bg-[var(--dash-surface)]/50 p-5 backdrop-blur-md transition-colors hover:border-[var(--dash-gold)]/30"
+                >
+                  <header className="mb-5 flex items-center justify-between">
+                    <span className="font-mono text-[11px] text-[var(--dash-muted)]">
+                      {partido.fecha} · {partido.hora}
+                    </span>
+                    <span
+                      className={`inline-flex items-center gap-1.5 rounded border px-2.5 py-1 font-mono text-[10px] font-bold tracking-wider ${chip.wrap}`}
+                    >
+                      {chip.icon}
+                      {chip.texto}
+                    </span>
+                  </header>
+
+                  <div className="mb-5 flex items-center justify-between">
+                    <span className="flex-1 text-center text-sm font-semibold">
+                      {partido.equipo_local}
+                    </span>
+                    <span className="px-3 font-mono text-xs font-bold uppercase tracking-widest text-[var(--dash-muted)]">
+                      {finalizado ? RESULTADO_LABEL[partido.resultado] : "vs"}
+                    </span>
+                    <span className="flex-1 text-center text-sm font-semibold">
+                      {partido.equipo_visitante}
+                    </span>
+                  </div>
+
+                  <div className="-mx-5 -mb-5 mt-auto flex items-center justify-between rounded-b-xl border-t border-[var(--dash-border)]/60 bg-[var(--dash-surface-alt)]/60 px-5 py-3">
+                    <span className="text-xs text-[var(--dash-muted)]">Tu predicción</span>
+                    <span className="rounded border border-[var(--dash-border)] bg-[var(--dash-surface)] px-2 py-0.5 font-mono text-xs font-semibold text-[var(--dash-white)]">
+                      {prediccion ? RESULTADO_LABEL[prediccion.prediccion] : "sin enviar"}
+                    </span>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </section>
       </div>
-
-      <section className="fixture">
-        <h2 className="fixture-titulo">Tus predicciones</h2>
-        <div className="fixture-lista">
-          {jornada.partidos.map((partido) => {
-            const prediccion = predicciones.find(
-              (p) => p.id_partido === partido.id
-            );
-            const finalizado =
-              partido.estado === "finalizado" && partido.resultado;
-            const acerto =
-              finalizado && prediccion?.prediccion === partido.resultado;
-            const fallo =
-              finalizado &&
-              (!prediccion || prediccion.prediccion !== partido.resultado);
-
-            let estado = "pendiente";
-            if (acerto) estado = "acierto";
-            else if (fallo) estado = "fallo";
-
-            return (
-              <div
-                key={partido.id}
-                className={`fixture-fila fixture-fila--${estado}`}
-              >
-                <div className="fixture-equipos">
-                  <span className="equipo">{partido.equipo_local}</span>
-                  <span className="fixture-centro">
-                    {finalizado ? RESULTADO_LABEL[partido.resultado] : "VS"}
-                  </span>
-                  <span className="equipo equipo--visitante">
-                    {partido.equipo_visitante}
-                  </span>
-                </div>
-
-                <div className="fixture-detalle">
-                  <span className="fixture-pick">
-                    Tu pick:{" "}
-                    <strong>
-                      {prediccion
-                        ? RESULTADO_LABEL[prediccion.prediccion]
-                        : "sin enviar"}
-                    </strong>
-                  </span>
-                  <span className={`fixture-indicador fixture-indicador--${estado}`}>
-                    {estado === "acierto" && (
-                      <>
-                        <IconCheck /> Acierto
-                      </>
-                    )}
-                    {estado === "fallo" && (
-                      <>
-                        <IconCross /> Fallo
-                      </>
-                    )}
-                    {estado === "pendiente" && (
-                      <>
-                        <IconDot /> Por jugar
-                      </>
-                    )}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-    </div>
     </div>
   );
 }

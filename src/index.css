@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 /* ===== Tokens (mismos que Dashboard.css / TablaPartidos.css) ===== */
 :root {
   --dash-bg: #0a0a0b;
@@ -9,12 +11,10 @@
   --dash-white: #f2f1ec;
   --dash-muted: #8b8b91;
 }
-
 .app-shell {
   min-height: 100vh;
   background: var(--dash-bg);
 }
-
 .app-nav {
   display: flex;
   gap: 4px;
@@ -25,7 +25,6 @@
   top: 0;
   z-index: 10;
 }
-
 .app-nav button {
   font-family: "Oswald", sans-serif;
   font-size: 13px;
@@ -40,11 +39,9 @@
   cursor: pointer;
   transition: color 0.15s ease, border-color 0.15s ease;
 }
-
 .app-nav button:hover {
   color: var(--dash-white);
 }
-
 .app-nav-activo {
   color: var(--dash-gold) !important;
   border-bottom-color: var(--dash-gold) !important;

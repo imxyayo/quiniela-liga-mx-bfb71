@@ -9,7 +9,6 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { db, auth } from "../services/firebase";
-import "./CerrarJornada.css";
 
 // Cuota que paga cada persona por jornada. El premio total no es fijo:
 // se calcula como (CUOTA_POR_PERSONA - COMISION_ADMIN) * cuántos mandaron
@@ -219,30 +218,42 @@ export default function CerrarJornada() {
   };
 
   if (cargando) {
-    return <p className="cj-cargando">Buscando jornada en curso…</p>;
+    return (
+      <p className="text-sm text-[var(--dash-muted)]">Buscando jornada en curso…</p>
+    );
   }
 
   if (!jornada) {
-    return <p className="cj-cargando">No hay jornada en curso para cerrar.</p>;
+    return (
+      <p className="text-sm text-[var(--dash-muted)]">
+        No hay jornada en curso para cerrar.
+      </p>
+    );
   }
 
   if (resultado) {
     return (
-      <div className="cj-resultado">
-        <h3>Jornada {jornada.numero} cerrada</h3>
-        <p className="cj-resultado-label">
+      <div className="w-full max-w-lg rounded-xl border border-[var(--dash-gold)]/30 bg-[var(--dash-surface)]/60 p-5 backdrop-blur-md">
+        <h3 className="text-lg font-bold">Jornada {jornada.numero} cerrada</h3>
+        <p className="mb-1 mt-1 font-mono text-[11px] uppercase tracking-wider text-[var(--dash-gold)]">
           {resultado.ganadores.length > 1 ? "Ganadores" : "Ganador"}
         </p>
-        <p className="cj-participantes">
+        <p className="mb-4 text-xs text-[var(--dash-muted)]">
           {resultado.numParticipantes} participantes · $
           {resultado.premioTotal.toLocaleString("es-MX")} repartidos
         </p>
-        <ul className="cj-ganadores">
+
+        <ul className="flex flex-col gap-2">
           {resultado.ganadores.map((g) => (
-            <li key={g.uid}>
-              <span className="cj-ganador-nombre">{g.nombre}</span>
-              <span className="cj-ganador-aciertos">{g.aciertos} aciertos</span>
-              <span className="cj-ganador-premio">
+            <li
+              key={g.uid}
+              className="flex items-center justify-between gap-3 rounded-lg bg-[var(--dash-gold-soft)] px-4 py-3"
+            >
+              <span className="min-w-0 truncate text-sm font-semibold">{g.nombre}</span>
+              <span className="flex-shrink-0 text-xs text-[var(--dash-muted)]">
+                {g.aciertos} aciertos
+              </span>
+              <span className="flex-shrink-0 font-mono text-sm font-bold text-[var(--dash-gold)]">
                 ${resultado.premioIndividual.toLocaleString("es-MX")}
               </span>
             </li>
@@ -251,11 +262,11 @@ export default function CerrarJornada() {
 
         {resultado.siguienteInfo && (
           <p
-            className={
+            className={`mt-4 rounded border-l-4 px-3 py-2 text-xs ${
               resultado.siguienteInfo.ok
-                ? "cj-siguiente cj-siguiente-ok"
-                : "cj-siguiente cj-siguiente-error"
-            }
+                ? "border-[var(--dash-acierto)] bg-[var(--dash-acierto-soft)] text-[var(--dash-acierto)]"
+                : "border-[var(--dash-fallo)] bg-[var(--dash-fallo-soft)] text-[var(--dash-fallo)]"
+            }`}
           >
             {resultado.siguienteInfo.mensaje}
           </p>
@@ -271,35 +282,44 @@ export default function CerrarJornada() {
   const todosFinalizados = partidosFinalizados === totalPartidos;
 
   return (
-    <div className="cj-card">
-      <div className="cj-info">
-        <span className="cj-eyebrow">Jornada {jornada.numero}</span>
-        <p className="cj-progreso">
-          {partidosFinalizados} de {totalPartidos} partidos finalizados
-        </p>
-      </div>
+    <div className="w-full max-w-lg rounded-xl border border-[var(--dash-border)] bg-[var(--dash-surface)]/60 p-5 backdrop-blur-md">
+      <span className="mb-1 block font-mono text-[11px] uppercase tracking-wider text-[var(--dash-muted)]">
+        Jornada {jornada.numero}
+      </span>
+      <p className="mb-4 text-sm text-[var(--dash-white)]">
+        {partidosFinalizados} de {totalPartidos} partidos finalizados
+      </p>
 
       {!todosFinalizados && (
-        <div className="cj-advertencia">
-          Todavía hay partidos sin resultado. Cerrar ahora puede dejar aciertos
-          incompletos para todos.
-          <label className="cj-forzar">
+        <div className="mb-4 rounded-lg border border-[var(--dash-fallo)]/30 bg-[var(--dash-fallo-soft)] p-4">
+          <p className="mb-3 text-xs leading-relaxed text-[var(--dash-fallo)]">
+            Todavía hay partidos sin resultado. Cerrar ahora puede dejar
+            aciertos incompletos para todos.
+          </p>
+          <label className="flex cursor-pointer items-center gap-2 rounded border border-[var(--dash-border)] bg-[var(--dash-surface)] px-3 py-2">
             <input
               type="checkbox"
               checked={forzar}
               onChange={(e) => setForzar(e.target.checked)}
+              className="h-4 w-4 accent-[var(--dash-fallo)]"
             />
-            Entiendo, cerrar de todas formas
+            <span className="font-mono text-[11px] uppercase tracking-wider text-[var(--dash-fallo)]">
+              Entiendo, cerrar de todas formas
+            </span>
           </label>
         </div>
       )}
 
-      {error && <div className="cj-error">{error}</div>}
+      {error && (
+        <div className="mb-4 rounded border-l-4 border-[var(--dash-fallo)] bg-[var(--dash-fallo-soft)] px-3 py-2 text-sm text-[var(--dash-fallo)]">
+          {error}
+        </div>
+      )}
 
       <button
-        className="cj-btn-cerrar"
         onClick={handleCerrar}
         disabled={procesando || (!todosFinalizados && !forzar)}
+        className="w-full rounded border border-[var(--dash-gold)] px-6 py-3 font-mono text-xs font-bold uppercase tracking-wider text-[var(--dash-gold)] transition hover:bg-[var(--dash-gold-soft)] disabled:cursor-not-allowed disabled:opacity-40"
       >
         {procesando ? "Cerrando…" : "Cerrar jornada y calcular ganador"}
       </button>

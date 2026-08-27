@@ -10,7 +10,11 @@ import {
 } from "firebase/firestore";
 import { db } from "../services/firebase";
 import { useAuth } from "../hooks/useAuth";
-import "./TablaPartidos.css";
+
+// Codigo corto para el escudo circular (solo visual, no toca datos guardados)
+function codigoEquipo(nombre) {
+  return (nombre || "").trim().slice(0, 3).toUpperCase();
+}
 
 export default function TablaPartidos() {
   const { usuario } = useAuth();
@@ -126,26 +130,27 @@ export default function TablaPartidos() {
     }
   };
 
+  // ===== Estados simples (cargando / error / sin jornada) =====
   if (cargando) {
     return (
-      <div className="tp-page">
-        <div className="tp-estado">Cargando jornada…</div>
+      <div className="flex min-h-screen w-full items-center justify-center bg-[var(--dash-bg)] font-['Inter',sans-serif] text-[var(--dash-muted)]">
+        Cargando jornada…
       </div>
     );
   }
 
   if (error && !jornada) {
     return (
-      <div className="tp-page">
-        <div className="tp-estado tp-estado--error">{error}</div>
+      <div className="flex min-h-screen w-full items-center justify-center bg-[var(--dash-bg)] px-6 text-center font-['Inter',sans-serif] text-[var(--dash-fallo)]">
+        {error}
       </div>
     );
   }
 
   if (!jornada || partidos.length === 0) {
     return (
-      <div className="tp-page">
-        <div className="tp-estado">No hay partidos disponibles.</div>
+      <div className="flex min-h-screen w-full items-center justify-center bg-[var(--dash-bg)] font-['Inter',sans-serif] text-[var(--dash-muted)]">
+        No hay partidos disponibles.
       </div>
     );
   }
@@ -153,95 +158,209 @@ export default function TablaPartidos() {
   // Si el admin todavía no marca el pago de este usuario para esta
   // jornada, no se muestra ningún partido ni formulario de predicción.
   if (!pagoConfirmado) {
+    const clabe = "012180015792710307";
+    const whatsappUrl = `https://wa.me/527207999106?text=${encodeURIComponent(
+      `Hola! Aquí está mi comprobante de pago para la Jornada ${jornada.numero}`
+    )}`;
+
+    const copiarClabe = () => {
+      navigator.clipboard?.writeText(clabe);
+    };
+
     return (
-      <div className="tp-page">
-        <div className="tp-container">
-          <header className="tp-header">
-            <div>
-              <span className="tp-eyebrow">Predicciones</span>
-              <h2>Jornada {jornada.numero}</h2>
+      <div className="min-h-screen w-full bg-[var(--dash-bg)]">
+        <div className="mx-auto max-w-3xl px-4 pb-24 pt-6 font-['Inter',sans-serif] text-[var(--dash-white)]">
+          <div className="mb-3 inline-flex items-center rounded border border-[var(--dash-border)] bg-[var(--dash-surface)] px-3 py-1">
+            <span className="font-mono text-xs uppercase tracking-wider text-[var(--dash-gold)]">
+              Predicciones
+            </span>
+          </div>
+          <h2 className="mb-6 text-2xl font-bold">Jornada {jornada.numero}</h2>
+
+          <div className="rounded-xl border border-[var(--dash-gold)] bg-[var(--dash-gold-soft)] p-5">
+            <p className="mb-4 text-sm text-[var(--dash-gold)]">
+              Aún no se ha confirmado tu pago de esta jornada. Transfiere tu
+              cuota y mándame el comprobante por WhatsApp para darte acceso.
+            </p>
+
+            <div className="mb-4 space-y-2 rounded-lg border border-[var(--dash-border)] bg-[var(--dash-surface)]/70 p-4">
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-[11px] uppercase tracking-wider text-[var(--dash-muted)]">
+                  Banco
+                </span>
+                <span className="text-sm font-semibold">BBVA Bancomer</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-[11px] uppercase tracking-wider text-[var(--dash-muted)]">
+                  CLABE
+                </span>
+                <span className="flex items-center gap-2">
+                  <span className="font-mono text-sm font-semibold tracking-wide">
+                    {clabe}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={copiarClabe}
+                    className="rounded border border-[var(--dash-border)] px-2 py-0.5 font-mono text-[10px] uppercase text-[var(--dash-muted)] transition hover:border-[var(--dash-gold)] hover:text-[var(--dash-gold)]"
+                  >
+                    Copiar
+                  </button>
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-[11px] uppercase tracking-wider text-[var(--dash-muted)]">
+                  Titular
+                </span>
+                <span className="text-sm font-semibold">Jair Prieto Dorantes</span>
+              </div>
             </div>
-          </header>
-          <div className="tp-estado tp-estado--pago">
-            Aún no se ha confirmado tu pago de esta jornada. Avísale al admin
-            en cuanto transfieras o pagues tu cuota para que puedas predecir.
+
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 rounded bg-[var(--dash-gold)] px-6 py-3 font-mono text-xs font-bold uppercase tracking-wider text-[#14120c] transition hover:brightness-110"
+            >
+              Enviar comprobante por WhatsApp
+            </a>
           </div>
         </div>
       </div>
     );
   }
 
+  const seleccionados = Object.values(predicciones).filter(Boolean).length;
+
   return (
-    <div className="tp-page">
-      <div className="tp-container">
-        <header className="tp-header">
+    <div className="min-h-screen w-full bg-[var(--dash-bg)]">
+      <div className="mx-auto max-w-5xl px-4 pb-24 pt-6 font-['Inter',sans-serif] text-[var(--dash-white)]">
+        {/* Header */}
+        <div className="mb-8 flex flex-col gap-4 border-b border-[var(--dash-border)] pb-6 md:flex-row md:items-end md:justify-between">
           <div>
-            <span className="tp-eyebrow">Predicciones</span>
-            <h2>Jornada {jornada.numero}</h2>
-          </div>
-          {enviadas && (
-            <span className="tp-badge tp-badge--enviado">Predicciones enviadas</span>
-          )}
-        </header>
-
-        {error && <div className="tp-error">{error}</div>}
-
-        <div className="tp-lista">
-          {partidos.map((partido) => (
-            <div key={partido.id} className="tp-card">
-              <div className="tp-card-top">
-                <div className="tp-equipos">
-                  <span className="tp-equipo">{partido.equipo_local}</span>
-                  <span className="tp-vs">vs</span>
-                  <span className="tp-equipo tp-equipo--visitante">
-                    {partido.equipo_visitante}
-                  </span>
-                </div>
-                <span className="tp-fecha">
-                  {partido.fecha} · {partido.hora}
-                </span>
-              </div>
-
-              <div className="tp-opciones">
-                <button
-                  type="button"
-                  className={`tp-opcion ${predicciones[partido.id] === "local" ? "tp-opcion--activa" : ""}`}
-                  onClick={() => handleSeleccionar(partido.id, "local")}
-                  disabled={enviadas}
-                >
-                  {partido.equipo_local}
-                </button>
-                <button
-                  type="button"
-                  className={`tp-opcion tp-opcion--empate ${predicciones[partido.id] === "empate" ? "tp-opcion--activa" : ""}`}
-                  onClick={() => handleSeleccionar(partido.id, "empate")}
-                  disabled={enviadas}
-                >
-                  Empate
-                </button>
-                <button
-                  type="button"
-                  className={`tp-opcion ${predicciones[partido.id] === "visitante" ? "tp-opcion--activa" : ""}`}
-                  onClick={() => handleSeleccionar(partido.id, "visitante")}
-                  disabled={enviadas}
-                >
-                  {partido.equipo_visitante}
-                </button>
-              </div>
+            <div className="mb-3 inline-flex items-center rounded border border-[var(--dash-border)] bg-[var(--dash-surface)] px-3 py-1">
+              <span className="font-mono text-xs uppercase tracking-wider text-[var(--dash-gold)]">
+                Jornada {jornada.numero}
+              </span>
             </div>
-          ))}
+            <h2 className="text-3xl font-extrabold tracking-tight">Mis Pronósticos</h2>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <p className="font-mono text-[11px] uppercase tracking-wider text-[var(--dash-muted)]">
+                Progreso
+              </p>
+              <p className="text-lg font-semibold text-[var(--dash-gold)]">
+                {seleccionados} / {partidos.length} partidos
+              </p>
+            </div>
+            {!enviadas && (
+              <button
+                onClick={handleEnviarPredicciones}
+                className="rounded bg-[var(--dash-gold)] px-6 py-3 font-mono text-xs font-bold uppercase tracking-wider text-[#14120c] transition hover:brightness-110 active:translate-y-px"
+              >
+                Enviar
+              </button>
+            )}
+            {enviadas && (
+              <span className="rounded-full bg-[var(--dash-acierto-soft)] px-4 py-2 font-mono text-xs font-semibold text-[var(--dash-acierto)]">
+                Enviadas
+              </span>
+            )}
+          </div>
         </div>
 
-        {!enviadas && (
-          <div className="tp-enviar-container">
-            <button className="tp-btn-enviar" onClick={handleEnviarPredicciones}>
-              Enviar predicciones
-            </button>
+        {error && (
+          <div className="mb-5 rounded border-l-4 border-[var(--dash-fallo)] bg-[var(--dash-fallo-soft)] px-4 py-3 text-sm text-[var(--dash-fallo)]">
+            {error}
           </div>
         )}
 
+        {/* Grid de partidos */}
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          {partidos.map((partido) => {
+            const activa = predicciones[partido.id];
+            return (
+              <div
+                key={partido.id}
+                className="relative overflow-hidden rounded-xl border border-[var(--dash-border)] bg-[var(--dash-surface)]/70 p-5 backdrop-blur-md transition-colors hover:border-[var(--dash-gold)]/50"
+              >
+                {activa && (
+                  <div className="absolute right-0 top-0 h-full w-1 bg-[var(--dash-gold)]" />
+                )}
+
+                <div className="mb-5 flex items-center justify-between">
+                  <span className="font-mono text-[11px] text-[var(--dash-muted)]">
+                    {partido.fecha} · {partido.hora}
+                  </span>
+                  <span className="rounded border border-[var(--dash-gold)]/30 bg-[var(--dash-gold-soft)] px-2 py-1 font-mono text-[10px] text-[var(--dash-gold)]">
+                    Liga MX
+                  </span>
+                </div>
+
+                <div className="mb-6 flex items-center justify-between">
+                  <div className="flex flex-1 flex-col items-center text-center">
+                    <div className="mb-2 flex h-14 w-14 items-center justify-center rounded-full border border-[var(--dash-border)] bg-[var(--dash-surface-alt)] font-mono text-xs font-bold text-[var(--dash-gold)]">
+                      {codigoEquipo(partido.equipo_local)}
+                    </div>
+                    <span className="text-sm font-semibold">{partido.equipo_local}</span>
+                  </div>
+                  <span className="px-3 text-lg font-extrabold text-[var(--dash-muted)]/50">
+                    VS
+                  </span>
+                  <div className="flex flex-1 flex-col items-center text-center">
+                    <div className="mb-2 flex h-14 w-14 items-center justify-center rounded-full border border-[var(--dash-border)] bg-[var(--dash-surface-alt)] font-mono text-xs font-bold text-[var(--dash-gold)]">
+                      {codigoEquipo(partido.equipo_visitante)}
+                    </div>
+                    <span className="text-sm font-semibold">{partido.equipo_visitante}</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    disabled={enviadas}
+                    onClick={() => handleSeleccionar(partido.id, "local")}
+                    className={`rounded-lg py-3 text-xs font-semibold transition-all disabled:cursor-not-allowed ${
+                      activa === "local"
+                        ? "bg-gradient-to-b from-[#f0ce91] to-[var(--dash-gold)] font-bold text-[#412d00]"
+                        : "border border-[var(--dash-border)] bg-[var(--dash-surface-alt)] text-[var(--dash-muted)] hover:border-[var(--dash-gold)] hover:text-[var(--dash-gold)] disabled:opacity-50"
+                    }`}
+                  >
+                    {partido.equipo_local}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={enviadas}
+                    onClick={() => handleSeleccionar(partido.id, "empate")}
+                    className={`rounded-lg py-3 text-xs font-semibold transition-all disabled:cursor-not-allowed ${
+                      activa === "empate"
+                        ? "bg-gradient-to-b from-[#f0ce91] to-[var(--dash-gold)] font-bold text-[#412d00]"
+                        : "border border-[var(--dash-border)] bg-[var(--dash-surface-alt)] text-[var(--dash-muted)] hover:border-[var(--dash-gold)] hover:text-[var(--dash-gold)] disabled:opacity-50"
+                    }`}
+                  >
+                    Empate
+                  </button>
+                  <button
+                    type="button"
+                    disabled={enviadas}
+                    onClick={() => handleSeleccionar(partido.id, "visitante")}
+                    className={`rounded-lg py-3 text-xs font-semibold transition-all disabled:cursor-not-allowed ${
+                      activa === "visitante"
+                        ? "bg-gradient-to-b from-[#f0ce91] to-[var(--dash-gold)] font-bold text-[#412d00]"
+                        : "border border-[var(--dash-border)] bg-[var(--dash-surface-alt)] text-[var(--dash-muted)] hover:border-[var(--dash-gold)] hover:text-[var(--dash-gold)] disabled:opacity-50"
+                    }`}
+                  >
+                    {partido.equipo_visitante}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
         {enviadas && (
-          <div className="tp-confirmacion">
+          <div className="mt-6 rounded-lg border-l-4 border-[var(--dash-acierto)] bg-[var(--dash-acierto-soft)] px-4 py-3 text-center text-sm text-[var(--dash-acierto)]">
             Tus predicciones ya quedaron guardadas y no se pueden cambiar.
           </div>
         )}
