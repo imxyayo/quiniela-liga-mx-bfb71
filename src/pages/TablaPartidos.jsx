@@ -159,7 +159,7 @@ export default function TablaPartidos() {
   // jornada, no se muestra ningún partido ni formulario de predicción.
   if (!pagoConfirmado) {
     const clabe = "012180015792710307";
-    const whatsappUrl = `https://wa.me/527207999106?text=${encodeURIComponent(
+    const whatsappUrl = `https://wa.me/525574503273?text=${encodeURIComponent(
       `Hola! Aquí está mi comprobante de pago para la Jornada ${jornada.numero}`
     )}`;
 
