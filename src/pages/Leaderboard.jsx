@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { collection, limit, onSnapshot, orderBy, query, where } from "firebase/firestore";
 import { db } from "../services/firebase";
 import { useAuth } from "../hooks/useAuth";
 
@@ -63,6 +63,23 @@ export default function Leaderboard() {
   const [usuarios, setUsuarios] = useState({}); // { uid: nombre }
   const [filas, setFilas] = useState([]);
   const [cargando, setCargando] = useState(true);
+  const [ultimaCerrada, setUltimaCerrada] = useState(null);
+
+  // 0. Ultima jornada cerrada (para mostrar el "reinado" hasta que se
+  // cierre otra). Se queda visible aunque la jornada en_curso todavia
+  // no tenga resultados propios.
+  useEffect(() => {
+    const q = query(
+      collection(db, "jornadas"),
+      where("estado", "==", "cerrada"),
+      orderBy("numero", "desc"),
+      limit(1)
+    );
+    const unsub = onSnapshot(q, (snap) => {
+      setUltimaCerrada(snap.empty ? null : snap.docs[0].data());
+    });
+    return unsub;
+  }, []);
 
   // 1. Jornada activa
   useEffect(() => {
@@ -135,6 +152,36 @@ export default function Leaderboard() {
   return (
     <div className="min-h-screen w-full bg-[var(--dash-bg)]">
       <div className="mx-auto max-w-3xl px-4 pb-24 pt-6 font-['Inter',sans-serif] text-[var(--dash-white)]">
+        {ultimaCerrada && (
+          <section className="mb-8 rounded-xl border border-[var(--dash-gold)]/40 bg-gradient-to-br from-[var(--dash-gold-soft)] via-[var(--dash-surface)]/60 to-[var(--dash-surface)]/60 p-5 backdrop-blur-md">
+            <span className="mb-1 block font-mono text-[11px] uppercase tracking-widest text-[var(--dash-gold)]">
+              {ultimaCerrada.ganadores?.length > 1
+                ? `Ganadores de la Jornada ${ultimaCerrada.numero}`
+                : `Ganador de la Jornada ${ultimaCerrada.numero}`}
+            </span>
+            <ul className="mt-2 flex flex-col gap-2">
+              {(ultimaCerrada.ganadores || []).map((g) => (
+                <li
+                  key={g.uid}
+                  className="flex items-center justify-between gap-3 rounded-lg bg-[var(--dash-surface)]/70 px-4 py-2.5"
+                >
+                  <span className="min-w-0 truncate text-sm font-semibold">
+                    {g.nombre}
+                  </span>
+                  <span className="flex-shrink-0 text-xs text-[var(--dash-muted)]">
+                    {g.aciertos} aciertos
+                  </span>
+                  {ultimaCerrada.premioIndividual != null && (
+                    <span className="flex-shrink-0 font-mono text-sm font-bold text-[var(--dash-gold)]">
+                      ${ultimaCerrada.premioIndividual.toLocaleString("es-MX")}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         <header className="mb-8">
           <span className="mb-1 block font-mono text-xs uppercase tracking-widest text-[var(--dash-gold)]">
             Jornada {jornada.numero}
@@ -148,8 +195,8 @@ export default function Leaderboard() {
           </p>
         ) : (
           <>
-            {/* Podio: solo si hay al menos 3 jugadores */}
-            {top3.length === 3 && (
+            {/* Podio: se adapta a 1, 2 o 3 jugadores, nunca se esconde */}
+            {top3.length > 0 && (
               <div className="relative mb-8 overflow-hidden rounded-xl border border-[var(--dash-border)] bg-[var(--dash-surface)]/50 p-6 pt-16 backdrop-blur-md md:pt-20">
                 <div className="flex items-end justify-center gap-3 md:gap-6">
                   {top3.map((fila, i) => {
